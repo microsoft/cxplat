@@ -1,0 +1,127 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
+    - release/*
+  pull_request:
+    branches:
+    - main
+    - release/*
+
+concurrency:
+  # Cancel any workflow currently in progress for the same PR.
+  # Allow running concurrently with any other commits.
+  group: build-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+  build-windows:
+    name: WinUser
+    needs: []
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ['Debug', 'Release']
+        plat: [windows, uwp] # TODO: Support gamecore_console
+        os: ['windows-2022']
+        arch: [x86, x64, arm64]
+        static: ['', '-Static']
+        exclude:
+        # TODO: FIX: Static builds fail with UWP
+        - plat: uwp
+          static: '-Static'
+    uses: ./.github/workflows/build-reuse-win.yml
+    with:
+      config: ${{ matrix.config }}
+      plat: ${{ matrix.plat }}
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      static: ${{ matrix.static }}
+
+  build-windows-kernel:
+    name: WinKernel
+    needs: []
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ['Debug', 'Release']
+        plat: [winkernel]
+        os: ['windows-2022']
+        arch: [x64, arm64]
+    uses: ./.github/workflows/build-reuse-winkernel.yml
+    with:
+      config: ${{ matrix.config }}
+      plat: ${{ matrix.plat }}
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+
+  build-ubuntu-cross-compile:
+    name: UbuntuArm
+    needs: []
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ['Debug', 'Release']
+        plat: [linux]
+        os: ['ubuntu-20.04', 'ubuntu-22.04']
+        arch: [arm, arm64]
+        static: ['', '-Static']
+    uses: ./.github/workflows/build-reuse-unix.yml
+    with:
+      config: ${{ matrix.config }}
+      plat: ${{ matrix.plat }}
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      static: ${{ matrix.static }}
+
+  build-ubuntu:
+    name: Ubuntu
+    needs: []
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ['Debug', 'Release']
+        plat: [linux, android]
+        os: ['ubuntu-20.04', 'ubuntu-22.04']
+        arch: [x86, x64]
+        static: ['', '-Static']
+        clang: ['', '-Clang']
+        exclude:
+        # Android doesn't support x86
+        - plat: android
+          arch: x86
+        # Android doesn't use Clang
+        - plat: android
+          clang: '-Clang'
+    uses: ./.github/workflows/build-reuse-unix.yml
+    with:
+      config: ${{ matrix.config }}
+      plat: ${{ matrix.plat }}
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      static: ${{ matrix.static }}
+      clang: ${{ matrix.clang }}
+
+  build-darwin:
+    name: MacOs
+    needs: []
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ['Debug', 'Release']
+        plat: [macos, ios]
+        os: ['macos-12']
+        arch: [x64, arm64]
+        static: ['', '-Static']
+    uses: ./.github/workflows/build-reuse-unix.yml
+    with:
+      config: ${{ matrix.config }}
+      plat: ${{ matrix.plat }}
+      os: ${{ matrix.os }}
+      arch: ${{ matrix.arch }}
+      static: ${{ matrix.static }}
