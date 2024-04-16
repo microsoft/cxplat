@@ -76,11 +76,11 @@ jobs:
         chown -R $(id -u):$(id -g) $PWD
     - name: Prepare Machine
       shell: pwsh
-      run: tools/prepare-machine.ps1 -ForBuild
+      run: scripts/prepare-machine.ps1 -ForBuild
     - name: Build
       if: inputs.build == ''
       shell: pwsh
-      run: tools/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} ${{ inputs.static }} ${{ inputs.clang }} -OneBranch
+      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} ${{ inputs.static }} ${{ inputs.clang }} -OneBranch
     - name: Upload build artifacts
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
       with:

@@ -151,12 +151,12 @@ param (
 Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 
-if ($PSVersionTable.PSVersion.Major -lt 7 -and $Platform -ne "winkernel") {
-    Write-Error "[$(Get-Date)] Powershell 7 required"
-    exit
-}
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    if ($Platform -ne "winkernel") {
+        Write-Error "[$(Get-Date)] Powershell 7 required"
+        exit
+    }
 
-if ($Platform -eq "winkernel") {
     $IsWindows = $true
     $IsLinux = $false
     $IsMacOS = $false
