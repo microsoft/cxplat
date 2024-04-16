@@ -8,3 +8,5 @@ else()
 endif()
 
 add_library(cxplat STATIC ${SOURCES})
+
+target_include_directories(cxplat PRIVATE ${PROJECT_SOURCE_DIR}/inc)

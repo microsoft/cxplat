@@ -38,5 +38,8 @@ elseif (UNIX)
 endif()
 message(STATUS "Platform: ${CX_PLATFORM}")
 
+set(CXPLAT_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(CXPLAT_OUTPUT_DIR ${CXPLAT_BUILD_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release> CACHE STRING "Output directory for build artifacts")
+
 # Product code
 add_subdirectory(src/lib/)

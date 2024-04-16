@@ -1,0 +1,344 @@
+<#
+
+.SYNOPSIS
+This script provides helpers for building cxplat.
+
+.PARAMETER Config
+    The debug or release configuration to build for.
+
+.PARAMETER Arch
+    The CPU architecture to build for.
+
+.PARAMETER Platform
+    Specify which platform to build for.
+
+.PARAMETER Clean
+    Deletes all previous build and configuration.
+
+.PARAMETER Parallel
+    Enables CMake to build in parallel, where possible.
+
+.PARAMETER DynamicCRT
+    Builds msquic with dynamic C runtime (Windows-only).
+
+.PARAMETER StaticCRT
+    Builds msquic with static C runtime (Windows-only).
+
+.PARAMETER Generator
+    Specifies a specific cmake generator (Only supported on unix)
+
+.PARAMETER ConfigureOnly
+    Run configuration only.
+
+.PARAMETER CI
+    Build is occuring from CI
+
+.PARAMETER ExtraArtifactDir
+    Add an extra classifier to the artifact directory to allow publishing alternate builds of same base library
+
+.PARAMETER LibraryName
+    Renames the library to whatever is passed in
+
+.PARAMETER OneBranch
+    Build is occuring from Onebranch pipeline.
+
+.EXAMPLE
+    build.ps1
+
+.EXAMPLE
+    build.ps1 -Config Release
+
+#>
+
+param (
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Debug", "Release")]
+    [string]$Config = "Debug",
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("x86", "x64", "arm", "arm64", "arm64ec")]
+    [string]$Arch = "",
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios")] # For future expansion
+    [string]$Platform = "",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$Clean = $false,
+
+    [Parameter(Mandatory = $false)]
+    [int32]$Parallel = -2,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DynamicCRT = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$StaticCRT = $false,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Generator = "",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$ConfigureOnly = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$CI = $false,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ExtraArtifactDir = "",
+
+    [Parameter(Mandatory = $false)]
+    [string]$LibraryName = "cxplat",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$OneBranch = $false
+)
+
+Set-StrictMode -Version 'Latest'
+$PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+if ($Parallel -lt -1) {
+    if ($IsWindows) {
+        $Parallel = -1
+    } else {
+        $Parallel = 0
+    }
+}
+
+$BuildConfig = & (Join-Path $PSScriptRoot get-buildconfig.ps1) -Platform $Platform -Arch $Arch -ExtraArtifactDir $ExtraArtifactDir -Config $Config
+
+$Platform = $BuildConfig.Platform
+$Arch = $BuildConfig.Arch
+$ArtifactsDir = $BuildConfig.ArtifactsDir
+
+if ($Generator -eq "") {
+    if (!$IsWindows) {
+        $Generator = "Unix Makefiles"
+    } else {
+        $Generator = "Visual Studio 17 2022"
+    }
+}
+
+if (!$IsWindows -And $Platform -eq "uwp") {
+    Write-Error "[$(Get-Date)] Cannot build uwp on non windows platforms"
+    exit
+}
+
+if (!$IsWindows -And ($Platform -eq "gamecore_console")) {
+    Write-Error "[$(Get-Date)] Cannot build gamecore on non windows platforms"
+    exit
+}
+
+if ($Arch -ne "x64" -And ($Platform -eq "gamecore_console")) {
+    Write-Error "[$(Get-Date)] Cannot build gamecore for non-x64 platforms"
+    exit
+}
+
+if ($Arch -eq "arm64ec") {
+    if (!$IsWindows) {
+        Write-Error "Arm64EC is only supported on Windows"
+    }
+    if ($Tls -eq "openssl" -Or $Tls -eq "openssl3") {
+        Write-Error "Arm64EC does not support openssl"
+    }
+}
+
+if ($Platform -eq "ios" -and !$Static) {
+    $Static = $true
+    Write-Host "iOS can only be built as static"
+}
+
+# Root directory of the project.
+$RootDir = Split-Path $PSScriptRoot -Parent
+
+# Important directory paths.
+$BaseArtifactsDir = Join-Path $RootDir "artifacts"
+$BaseBuildDir = Join-Path $RootDir "build"
+
+$BuildDir = Join-Path $BaseBuildDir $Platform
+$BuildDir = Join-Path $BuildDir "$($Arch)"
+
+if ($Clean) {
+    # Delete old build/config directories.
+    if (Test-Path $ArtifactsDir) { Remove-Item $ArtifactsDir -Recurse -Force | Out-Null }
+    if (Test-Path $BuildDir) { Remove-Item $BuildDir -Recurse -Force | Out-Null }
+}
+
+# Initialize directories needed for building.
+if (!(Test-Path $BaseArtifactsDir)) {
+    New-Item -Path $BaseArtifactsDir -ItemType Directory -Force | Out-Null
+}
+if (!(Test-Path $BuildDir)) { New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null }
+
+function Log($msg) {
+    Write-Host "[$(Get-Date)] $msg"
+}
+
+# Executes cmake with the given arguments.
+function CMake-Execute([String]$Arguments) {
+    Log "cmake $($Arguments)"
+    $process = Start-Process cmake $Arguments -PassThru -NoNewWindow -WorkingDirectory $BuildDir
+    $handle = $process.Handle # Magic work around. Don't remove this line.
+    $process.WaitForExit();
+
+    if ($process.ExitCode -ne 0) {
+        Write-Error "[$(Get-Date)] CMake exited with status code $($process.ExitCode)"
+    }
+}
+
+# Uses cmake to generate the build configuration files.
+function CMake-Generate {
+    $Arguments = ""
+
+    if ($Generator.Contains(" ")) {
+        $Generator = """$Generator"""
+    }
+
+    if ($IsWindows) {
+        if ($Generator.Contains("Visual Studio") -or [string]::IsNullOrWhiteSpace($Generator)) {
+            if ($Generator.Contains("Visual Studio")) {
+                $Arguments += " -G $Generator"
+            }
+            $Arguments += " -A "
+            switch ($Arch) {
+                "x86"   { $Arguments += "Win32" }
+                "x64"   { $Arguments += "x64" }
+                "arm"   { $Arguments += "arm" }
+                "arm64" { $Arguments += "arm64" }
+                "arm64ec" { $Arguments += "arm64ec" }
+            }
+        } else {
+            Write-Host "Non VS based generators must be run from a Visual Studio Developer Powershell Prompt matching the passed in architecture"
+            $Arguments += " -G $Generator"
+        }
+    } else {
+        $Arguments += "-G $Generator"
+    }
+    if ($Platform -eq "ios") {
+        $IosTCFile = Join-Path $RootDir cmake toolchains ios.cmake
+        $Arguments +=  " -DCMAKE_TOOLCHAIN_FILE=""$IosTCFile"" -DDEPLOYMENT_TARGET=""13.0"" -DENABLE_ARC=0 -DCMAKE_OSX_DEPLOYMENT_TARGET=""13.0"""
+        switch ($Arch) {
+            "x64"   { $Arguments += " -DPLATFORM=SIMULATOR64"}
+            "arm64" { $Arguments += " -DPLATFORM=OS64"}
+        }
+    }
+    if ($Platform -eq "macos") {
+        switch ($Arch) {
+            "x64"   { $Arguments += " -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=""12"""}
+            "arm64" { $Arguments += " -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=""11.0"""}
+        }
+    }
+    if ($Platform -eq "linux") {
+        $Arguments += " $Generator"
+        $HostArch = "$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)".ToLower()
+        if ($HostArch -ne $Arch) {
+            if ($OneBranch) {
+                $Arguments += " -DONEBRANCH=1"
+                if ($ToolchainFile -eq "") {
+                    switch ($Arch) {
+                        "arm"   { $ToolchainFile = "cmake/toolchains/arm-linux.cmake" }
+                        "arm64" { $ToolchainFile = "cmake/toolchains/aarch64-linux.cmake" }
+                    }
+                }
+            }
+            $Arguments += " -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_CROSSCOMPILING=1 -DCMAKE_SYSROOT=$SysRoot"
+            switch ($Arch) {
+                "arm64" { $Arguments += " -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu -DCMAKE_TARGET_ARCHITECTURE=arm64" }
+                "arm" { $Arguments += " -DCMAKE_CXX_COMPILER_TARGET=arm-linux-gnueabihf  -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DCMAKE_TARGET_ARCHITECTURE=arm" }
+            }
+
+            # to build with pkg-config
+            switch ($Arch) {
+                "arm"   { $env:PKG_CONFIG_PATH="$SysRoot/usr/lib/arm-linux-gnueabihf/pkgconfig" }
+                "arm64" { $env:PKG_CONFIG_PATH="$SysRoot/usr/lib/aarch64-linux-gnu/pkgconfig" }
+            }
+       }
+    }
+    $Arguments += " -DCXPLAT_OUTPUT_DIR=""$ArtifactsDir"""
+
+    if (!$IsWindows) {
+        $ConfigToBuild = $Config;
+        if ($Config -eq "Release") {
+            $ConfigToBuild = "RelWithDebInfo"
+        }
+        $Arguments += " -DCMAKE_BUILD_TYPE=" + $ConfigToBuild
+    }
+    if ($IsWindows) {
+        if ($DynamicCRT) {
+            $Arguments += " -DCXPLAT_STATIC_LINK_CRT=off -DCXPLAT_STATIC_LINK_PARTIAL_CRT=off"
+        }
+        if ($StaticCRT) {
+            $Arguments += " -DCXPLAT_STATIC_LINK_CRT=on -DCXPLAT_STATIC_LINK_PARTIAL_CRT=off"
+        }
+    }
+    if ($Platform -eq "uwp") {
+        $Arguments += " -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCXPLAT_UWP_BUILD=on"
+    }
+    if ($Platform -eq "gamecore_console") {
+        $Arguments += " -DCMAKE_SYSTEM_VERSION=10.0 -DCXPLAT_GAMECORE_BUILD=on"
+    }
+    if ($CI) {
+        $Arguments += " -DCXPLAT_CI=ON"
+        if ($Platform -eq "android" -or $ToolchainFile -ne "") {
+            $Arguments += " -DCXPLAT_SKIP_CI_CHECKS=ON"
+        }
+        $Arguments += " -DCXPLAT_VER_BUILD_ID=$env:BUILD_BUILDID"
+        $Arguments += " -DCXPLAT_VER_SUFFIX=-official"
+    }
+    if ($Platform -eq "android") {
+        $NDK = $env:ANDROID_NDK_LATEST_HOME -replace '26\.\d+\.\d+', '25.2.9519653' # Temporary work around. Use RegEx to replace newer version.
+        $env:PATH = "$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin:$env:PATH"
+        switch ($Arch) {
+            "x86"   { $Arguments += " -DANDROID_ABI=x86"}
+            "x64"   { $Arguments += " -DANDROID_ABI=x86_64" }
+            "arm"   { $Arguments += " -DANDROID_ABI=armeabi-v7a" }
+            "arm64" { $Arguments += " -DANDROID_ABI=arm64-v8a" }
+        }
+        $Arguments += " -DANDROID_PLATFORM=android-29"
+        $env:ANDROID_NDK_HOME = $NDK
+        $NdkToolchainFile = "$NDK/build/cmake/android.toolchain.cmake"
+        $Arguments += " -DANDROID_NDK=""$NDK"""
+        $Arguments += " -DCMAKE_TOOLCHAIN_FILE=""$NdkToolchainFile"""
+    }
+
+    $Arguments += " -DCXPLAT_LIBRARY_NAME=$LibraryName"
+    $Arguments += " ../../.."
+
+    Write-Host "Executing: $Arguments"
+    CMake-Execute $Arguments
+}
+
+
+# Uses cmake to generate the build configuration files.
+function CMake-Build {
+    $Arguments = "--build ."
+    if ($Parallel -gt 0) {
+        $Arguments += " --parallel $($Parallel)"
+    } elseif ($Parallel -eq 0) {
+        $Arguments += " --parallel"
+    }
+    if ($IsWindows) {
+        $Arguments += " --config " + $Config
+    } else {
+        $Arguments += " -- VERBOSE=1"
+    }
+
+    Write-Host "Running: $Arguments"
+    CMake-Execute $Arguments
+}
+
+##############################################################
+#                     Main Execution                         #
+##############################################################
+
+# Generate the build files.
+Log "Generating files..."
+CMake-Generate
+
+if (!$ConfigureOnly) {
+    # Build the code.
+    Log "Building..."
+    CMake-Build
+}
+
+Log "Done."
