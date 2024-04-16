@@ -12,6 +12,15 @@ This script provides helpers for building cxplat.
 .PARAMETER Platform
     Specify which platform to build for.
 
+.PARAMETER DisableTools
+    Don't build the tools directory.
+
+.PARAMETER DisableTest
+    Don't build the test directory.
+
+.PARAMETER DisablePerf
+    Don't build the perf directory.
+
 .PARAMETER Clean
     Deletes all previous build and configuration.
 
@@ -27,17 +36,32 @@ This script provides helpers for building cxplat.
 .PARAMETER Generator
     Specifies a specific cmake generator (Only supported on unix)
 
+.PARAMETER SkipPdbAltPath
+    Skip setting PDBALTPATH into built binaries on Windows. Without this flag, the PDB must be in the same directory as the DLL or EXE.
+
+.PARAMETER SkipSourceLink
+    Skip generating sourcelink and inserting it into the PDB.
+
+.PARAMETER Clang
+    Build with Clang if available
+
 .PARAMETER ConfigureOnly
     Run configuration only.
 
 .PARAMETER CI
     Build is occuring from CI
 
+.PARAMETER OfficialRelease
+    Build is for an official (tag) release.
+
 .PARAMETER ExtraArtifactDir
     Add an extra classifier to the artifact directory to allow publishing alternate builds of same base library
 
 .PARAMETER LibraryName
     Renames the library to whatever is passed in
+
+.PARAMETER SysRoot
+    Directory with cross-compilation tools
 
 .PARAMETER OneBranch
     Build is occuring from Onebranch pipeline.
@@ -64,6 +88,18 @@ param (
     [string]$Platform = "",
 
     [Parameter(Mandatory = $false)]
+    [switch]$Static = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DisableTools = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DisableTest = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DisablePerf = $false,
+
+    [Parameter(Mandatory = $false)]
     [switch]$Clean = $false,
 
     [Parameter(Mandatory = $false)]
@@ -79,10 +115,22 @@ param (
     [string]$Generator = "",
 
     [Parameter(Mandatory = $false)]
+    [switch]$SkipPdbAltPath = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$SkipSourceLink = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$Clang = $false,
+
+    [Parameter(Mandatory = $false)]
     [switch]$ConfigureOnly = $false,
 
     [Parameter(Mandatory = $false)]
     [switch]$CI = $false,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$OfficialRelease = $false,
 
     [Parameter(Mandatory = $false)]
     [string]$ExtraArtifactDir = "",
@@ -91,7 +139,13 @@ param (
     [string]$LibraryName = "cxplat",
 
     [Parameter(Mandatory = $false)]
-    [switch]$OneBranch = $false
+    [string]$SysRoot = "/",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$OneBranch = $false,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ToolchainFile = ""
 )
 
 Set-StrictMode -Version 'Latest'
@@ -145,6 +199,23 @@ if ($Platform -eq "ios" -and !$Static) {
     Write-Host "iOS can only be built as static"
 }
 
+if ($OfficialRelease) {
+    # We only actually try to do official release if there is a matching git tag.
+    # Clear the flag and then only set it if we find a tag.
+    $OfficialRelease = $false
+    try {
+        $env:GIT_REDIRECT_STDERR = '2>&1'
+        # Thanks to https://stackoverflow.com/questions/3404936/show-which-git-tag-you-are-on
+        # for this magic git command!
+        $Output = git describe --exact-match --tags $(git log -n1 --pretty='%h')
+        if (!$Output.Contains("fatal: no tag exactly matches")) {
+            Write-Host "Configuring OfficialRelease for tag build"
+            $OfficialRelease = $true
+        }
+    } catch { }
+    $global:LASTEXITCODE = 0
+}
+
 # Root directory of the project.
 $RootDir = Split-Path $PSScriptRoot -Parent
 
@@ -166,6 +237,14 @@ if (!(Test-Path $BaseArtifactsDir)) {
     New-Item -Path $BaseArtifactsDir -ItemType Directory -Force | Out-Null
 }
 if (!(Test-Path $BuildDir)) { New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null }
+
+if ($Clang) {
+    if ($IsWindows) {
+        Write-Error "Clang is not supported on windows currently"
+    }
+    $env:CC = 'clang'
+    $env:CXX = 'clang++'
+}
 
 function Log($msg) {
     Write-Host "[$(Get-Date)] $msg"
@@ -251,8 +330,25 @@ function CMake-Generate {
             }
        }
     }
+    if ($ToolchainFile -ne "") {
+        $Arguments += " -DCMAKE_TOOLCHAIN_FILE=""$ToolchainFile"""
+    }
+    if($Static) {
+        $Arguments += " -DCXPLAT_BUILD_SHARED=off"
+    }
     $Arguments += " -DCXPLAT_OUTPUT_DIR=""$ArtifactsDir"""
 
+    if ($Platform -ne "uwp" -and $Platform -ne "gamecore_console") {
+        if (!$DisableTools) {
+            $Arguments += " -DCXPLAT_BUILD_TOOLS=on"
+        }
+        if (!$DisableTest) {
+            $Arguments += " -DCXPLAT_BUILD_TEST=on"
+        }
+        if (!$DisablePerf) {
+            $Arguments += " -DCXPLAT_BUILD_PERF=on"
+        }
+    }
     if (!$IsWindows) {
         $ConfigToBuild = $Config;
         if ($Config -eq "Release") {
@@ -274,6 +370,12 @@ function CMake-Generate {
     if ($Platform -eq "gamecore_console") {
         $Arguments += " -DCMAKE_SYSTEM_VERSION=10.0 -DCXPLAT_GAMECORE_BUILD=on"
     }
+    if ($SkipPdbAltPath) {
+        $Arguments += " -DCXPLAT_PDBALTPATH=OFF"
+    }
+    if ($SkipSourceLink) {
+        $Arguments += " -DCXPLAT_SOURCE_LINK=OFF"
+    }
     if ($CI) {
         $Arguments += " -DCXPLAT_CI=ON"
         if ($Platform -eq "android" -or $ToolchainFile -ne "") {
@@ -281,6 +383,9 @@ function CMake-Generate {
         }
         $Arguments += " -DCXPLAT_VER_BUILD_ID=$env:BUILD_BUILDID"
         $Arguments += " -DCXPLAT_VER_SUFFIX=-official"
+    }
+    if ($OfficialRelease) {
+        $Arguments += " -DCXPLAT_OFFICIAL_RELEASE=ON"
     }
     if ($Platform -eq "android") {
         $NDK = $env:ANDROID_NDK_LATEST_HOME -replace '26\.\d+\.\d+', '25.2.9519653' # Temporary work around. Use RegEx to replace newer version.
