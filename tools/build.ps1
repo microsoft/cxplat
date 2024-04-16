@@ -84,7 +84,7 @@ param (
     [string]$Arch = "",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios")] # For future expansion
+    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel")] # For future expansion
     [string]$Platform = "",
 
     [Parameter(Mandatory = $false)]
@@ -150,6 +150,17 @@ param (
 
 Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+if ($PSVersionTable.PSVersion.Major -lt 7 -and $Platform -ne "winkernel") {
+    Write-Error "[$(Get-Date)] Powershell 7 required"
+    exit
+}
+
+if ($Platform -eq "winkernel") {
+    $IsWindows = $true
+    $IsLinux = $false
+    $IsMacOS = $false
+}
 
 if ($Parallel -lt -1) {
     if ($IsWindows) {
@@ -433,14 +444,26 @@ function CMake-Build {
 #                     Main Execution                         #
 ##############################################################
 
-# Generate the build files.
-Log "Generating files..."
-CMake-Generate
+if ($Platform -eq "winkernel") {
+    # Restore Nuget packages.
+    Write-Host "Restoring packages..."
+    msbuild cxplat.kernel.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
 
-if (!$ConfigureOnly) {
-    # Build the code.
-    Log "Building..."
-    CMake-Build
+    if (!$ConfigureOnly) {
+        # Build the code.
+        Write-Host "Building..."
+        msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
+    }
+} else {
+    # Generate the build files.
+    Log "Generating files..."
+    CMake-Generate
+
+    if (!$ConfigureOnly) {
+        # Build the code.
+        Log "Building..."
+        CMake-Build
+    }
 }
 
 Log "Done."

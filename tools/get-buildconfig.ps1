@@ -27,7 +27,7 @@ param (
     [string]$Arch = "",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "")] # For future expansion
+    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel", "")] # For future expansion
     [string]$Platform = "",
 
     [Parameter(Mandatory = $false)]
@@ -36,6 +36,12 @@ param (
 
 Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+if ($Platform -eq "winkernel") {
+    $IsWindows = $true
+    $IsLinux = $false
+    $IsMacOS = $false
+}
 
 if ($Platform -eq "android") {
     if (!$IsLinux) {
@@ -91,7 +97,8 @@ if ("" -eq $Platform) {
 
 $RootDir = Split-Path $PSScriptRoot -Parent
 $BaseArtifactsDir = Join-Path $RootDir "artifacts"
-$ArtifactsDir = Join-Path $BaseArtifactsDir "bin" $Platform
+$ArtifactsDir = Join-Path $BaseArtifactsDir "bin"
+$ArtifactsDir = Join-Path $ArtifactsDir $Platform
 if ([string]::IsNullOrWhitespace($ExtraArtifactDir)) {
     $ArtifactsDir = Join-Path $ArtifactsDir "$($Arch)_$($Config)"
 } else {
