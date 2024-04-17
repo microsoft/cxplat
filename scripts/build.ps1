@@ -12,35 +12,17 @@ This script provides helpers for building cxplat.
 .PARAMETER Platform
     Specify which platform to build for.
 
-.PARAMETER DisableTools
-    Don't build the tools directory.
-
-.PARAMETER DisableTest
-    Don't build the test directory.
-
-.PARAMETER DisablePerf
-    Don't build the perf directory.
-
 .PARAMETER Clean
     Deletes all previous build and configuration.
 
 .PARAMETER Parallel
     Enables CMake to build in parallel, where possible.
 
-.PARAMETER DynamicCRT
-    Builds msquic with dynamic C runtime (Windows-only).
-
-.PARAMETER StaticCRT
-    Builds msquic with static C runtime (Windows-only).
-
 .PARAMETER Generator
     Specifies a specific cmake generator (Only supported on unix)
 
 .PARAMETER SkipPdbAltPath
     Skip setting PDBALTPATH into built binaries on Windows. Without this flag, the PDB must be in the same directory as the DLL or EXE.
-
-.PARAMETER SkipSourceLink
-    Skip generating sourcelink and inserting it into the PDB.
 
 .PARAMETER Clang
     Build with Clang if available
@@ -88,37 +70,16 @@ param (
     [string]$Platform = "",
 
     [Parameter(Mandatory = $false)]
-    [switch]$Static = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$DisableTools = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$DisableTest = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$DisablePerf = $false,
-
-    [Parameter(Mandatory = $false)]
     [switch]$Clean = $false,
 
     [Parameter(Mandatory = $false)]
     [int32]$Parallel = -2,
 
     [Parameter(Mandatory = $false)]
-    [switch]$DynamicCRT = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$StaticCRT = $false,
-
-    [Parameter(Mandatory = $false)]
     [string]$Generator = "",
 
     [Parameter(Mandatory = $false)]
     [switch]$SkipPdbAltPath = $false,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$SkipSourceLink = $false,
 
     [Parameter(Mandatory = $false)]
     [switch]$Clang = $false,
@@ -201,11 +162,6 @@ if ($Arch -eq "arm64ec") {
     if (!$IsWindows) {
         Write-Error "[$(Get-Date)] Arm64EC is only supported on Windows"
     }
-}
-
-if ($Platform -eq "ios" -and !$Static) {
-    $Static = $true
-    Log "iOS can only be built as static"
 }
 
 if ($OfficialRelease) {
@@ -342,36 +298,15 @@ function CMake-Generate {
     if ($ToolchainFile -ne "") {
         $Arguments += " -DCMAKE_TOOLCHAIN_FILE=""$ToolchainFile"""
     }
-    if($Static) {
-        $Arguments += " -DCXPLAT_BUILD_SHARED=off"
-    }
+
     $Arguments += " -DCXPLAT_OUTPUT_DIR=""$ArtifactsDir"""
 
-    if ($Platform -ne "uwp" -and $Platform -ne "gamecore_console") {
-        if (!$DisableTools) {
-            $Arguments += " -DCXPLAT_BUILD_TOOLS=on"
-        }
-        if (!$DisableTest) {
-            $Arguments += " -DCXPLAT_BUILD_TEST=on"
-        }
-        if (!$DisablePerf) {
-            $Arguments += " -DCXPLAT_BUILD_PERF=on"
-        }
-    }
     if (!$IsWindows) {
         $ConfigToBuild = $Config;
         if ($Config -eq "Release") {
             $ConfigToBuild = "RelWithDebInfo"
         }
         $Arguments += " -DCMAKE_BUILD_TYPE=" + $ConfigToBuild
-    }
-    if ($IsWindows) {
-        if ($DynamicCRT) {
-            $Arguments += " -DCXPLAT_STATIC_LINK_CRT=off -DCXPLAT_STATIC_LINK_PARTIAL_CRT=off"
-        }
-        if ($StaticCRT) {
-            $Arguments += " -DCXPLAT_STATIC_LINK_CRT=on -DCXPLAT_STATIC_LINK_PARTIAL_CRT=off"
-        }
     }
     if ($Platform -eq "uwp") {
         $Arguments += " -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCXPLAT_UWP_BUILD=on"
@@ -381,9 +316,6 @@ function CMake-Generate {
     }
     if ($SkipPdbAltPath) {
         $Arguments += " -DCXPLAT_PDBALTPATH=OFF"
-    }
-    if ($SkipSourceLink) {
-        $Arguments += " -DCXPLAT_SOURCE_LINK=OFF"
     }
     if ($CI) {
         $Arguments += " -DCXPLAT_CI=ON"

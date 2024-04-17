@@ -70,12 +70,6 @@ message(STATUS "Platform: ${CX_PLATFORM}")
 set(FILENAME_DEP_REPLACE "get_filename_component(SELF_DIR \"$\{CMAKE_CURRENT_LIST_FILE\}\" PATH)")
 set(SELF_DIR "$\{SELF_DIR\}")
 
-option(CXPLAT_BUILD_TOOLS "Builds the tools code" OFF)
-option(CXPLAT_BUILD_TEST "Builds the test code" OFF)
-option(CXPLAT_BUILD_PERF "Builds the perf code" OFF)
-option(CXPLAT_BUILD_SHARED "Builds cxplat as a dynamic library" ON)
-option(CXPLAT_STATIC_LINK_CRT "Statically links the C runtime" ON)
-option(CXPLAT_STATIC_LINK_PARTIAL_CRT "Statically links the compiler-specific portion of the C runtime" ON)
 option(CXPLAT_UWP_BUILD "Build for UWP" OFF)
 option(CXPLAT_GAMECORE_BUILD "Build for GameCore" OFF)
 option(CXPLAT_EMBED_GIT_HASH "Embed git commit hash in the binary" ON)
@@ -93,24 +87,9 @@ if (CXPLAT_GAMECORE_BUILD)
     endif()
 endif()
 
-if (CXPLAT_UWP_BUILD OR CXPLAT_GAMECORE_BUILD)
-    message(STATUS "UWP And GameCore builds disable all executables, and force shared CRT")
-    set(CXPLAT_BUILD_TOOLS OFF)
-    set(CXPLAT_BUILD_TEST OFF)
-    set(CXPLAT_BUILD_PERF OFF)
-    set(CXPLAT_STATIC_LINK_CRT OFF)
-    set(CXPLAT_STATIC_LINK_PARTIAL_CRT OFF)
-endif()
-
-if (CXPLAT_STATIC_LINK_PARTIAL_CRT)
-    set(CXPLAT_STATIC_LINK_CRT ON)
-endif()
-
 if (NOT CXPLAT_BUILD_SHARED)
     cmake_minimum_required(VERSION 3.20)
 endif()
-
-set(BUILD_SHARED_LIBS ${CXPLAT_BUILD_SHARED})
 
 if (CXPLAT_PDBALTPATH AND MSVC)
 #    Disabled in all cases because generation is broken.
@@ -125,7 +104,6 @@ get_git_current_hash(${PROJECT_SOURCE_DIR} GIT_CURRENT_HASH)
 
 if(NOT GIT_CURRENT_HASH)
     message("Failed to get git hash. Binary will not contain git hash")
-    set(CXPLAT_SOURCE_LINK OFF)
     set(CXPLAT_EMBED_GIT_HASH OFF)
 endif()
 
@@ -323,21 +301,9 @@ if(WIN32)
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /IGNORE:4075 /DEBUG /OPT:REF /OPT:ICF")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /IGNORE:4075 /DEBUG /OPT:REF /OPT:ICF")
 
-    if(CXPLAT_STATIC_LINK_CRT)
-        message(STATUS "Configuring for statically-linked CRT")
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    endif()
-
-    if(CXPLAT_STATIC_LINK_PARTIAL_CRT)
-        message(STATUS "Configuring for partially statically-linked CRT")
-        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib")
-    endif()
-
-    if (NOT CXPLAT_STATIC_LINK_CRT AND NOT CXPLAT_STATIC_LINK_PARTIAL_CRT)
-        # We are using dynamic linking. Ensure that only the release version of CRT is used.
-        message(STATUS "Configuring for release version of dynamically linked CRT")
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-    endif()
+    # We are using dynamic linking. Ensure that only the release version of CRT is used.
+    message(STATUS "Configuring for release version of dynamically linked CRT")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 
 else() #!WIN32
     # Custom build flags.
