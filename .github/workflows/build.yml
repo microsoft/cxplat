@@ -27,21 +27,15 @@ jobs:
       fail-fast: false
       matrix:
         config: ['Debug', 'Release']
-        plat: [windows, uwp] # TODO: Support gamecore_console
+        plat: [windows] # TODO: Support uwp, gamecore_console
         os: ['windows-2022']
         arch: [x86, x64, arm64]
-        static: ['', '-Static']
-        exclude:
-        # TODO: FIX: Static builds fail with UWP
-        - plat: uwp
-          static: '-Static'
     uses: ./.github/workflows/build-reuse-win.yml
     with:
       config: ${{ matrix.config }}
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-      static: ${{ matrix.static }}
 
   build-windows-kernel:
     name: WinKernel
@@ -70,14 +64,12 @@ jobs:
         plat: [linux]
         os: ['ubuntu-20.04', 'ubuntu-22.04']
         arch: [arm, arm64]
-        static: ['', '-Static']
     uses: ./.github/workflows/build-reuse-unix.yml
     with:
       config: ${{ matrix.config }}
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-      static: ${{ matrix.static }}
 
   build-ubuntu:
     name: Ubuntu
@@ -89,7 +81,6 @@ jobs:
         plat: [linux, android]
         os: ['ubuntu-20.04', 'ubuntu-22.04']
         arch: [x86, x64]
-        static: ['', '-Static']
         clang: ['', '-Clang']
         exclude:
         # Android doesn't support x86
@@ -104,7 +95,6 @@ jobs:
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-      static: ${{ matrix.static }}
       clang: ${{ matrix.clang }}
 
   build-darwin:
@@ -117,11 +107,9 @@ jobs:
         plat: [macos, ios]
         os: ['macos-12']
         arch: [x64, arm64]
-        static: ['', '-Static']
     uses: ./.github/workflows/build-reuse-unix.yml
     with:
       config: ${{ matrix.config }}
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-      static: ${{ matrix.static }}

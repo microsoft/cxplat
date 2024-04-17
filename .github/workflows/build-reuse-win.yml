@@ -39,14 +39,6 @@ on:
         #   - x86
         #   - x64
         #   - arm64
-      static:
-        required: false
-        default: ''
-        type: string
-      build:
-        required: false
-        default: '' # Empty string means build all
-        type: string
 
 permissions: read-all
 
@@ -65,11 +57,10 @@ jobs:
       shell: pwsh
       run: scripts/prepare-machine.ps1 -ForBuild
     - name: Build
-      if: inputs.build == ''
       shell: pwsh
-      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} ${{ inputs.static }}
+      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }}
     - name: Upload build artifacts
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
       with:
-        name: ${{ inputs.config }}-${{ inputs.plat }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.static }}${{ inputs.build }}
+        name: ${{ inputs.config }}-${{ inputs.plat }}-${{ inputs.os }}-${{ inputs.arch }}
         path: artifacts
