@@ -301,10 +301,6 @@ if(WIN32)
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /IGNORE:4075 /DEBUG /OPT:REF /OPT:ICF")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /IGNORE:4075 /DEBUG /OPT:REF /OPT:ICF")
 
-    # We are using dynamic linking. Ensure that only the release version of CRT is used.
-    message(STATUS "Configuring for release version of dynamically linked CRT")
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-
 else() #!WIN32
     # Custom build flags.
 
