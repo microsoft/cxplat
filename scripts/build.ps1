@@ -201,7 +201,12 @@ if ($Clean) {
 if (!(Test-Path $BaseArtifactsDir)) {
     New-Item -Path $BaseArtifactsDir -ItemType Directory -Force | Out-Null
 }
-if (!(Test-Path $BuildDir)) { New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null }
+if (!(Test-Path $ArtifactsDir)) {
+    New-Item -Path $ArtifactsDir -ItemType Directory -Force | Out-Null
+}
+if (!(Test-Path $BuildDir)) {
+    New-Item -Path $BuildDir -ItemType Directory -Force | Out-Null
+}
 
 if ($Clang) {
     if ($IsWindows) {
@@ -368,6 +373,25 @@ function CMake-Build {
 
     Log "Running: $Arguments"
     CMake-Execute $Arguments
+
+    if ($IsWindows) {
+        Copy-Item (Join-Path $BuildDir "obj" $Config "$LibraryName.lib") $ArtifactsDir
+    } elseif ($IsLinux -and $OneBranch) {
+        # archive the build artifacts for packaging to persist symlinks and permissons.
+        $ArtifactsParentDir = Split-Path $ArtifactsDir -Parent
+        $ArtifactsLeafDir = Split-Path $ArtifactsDir -Leaf
+        tar -cvf "$ArtifactsDir.tar" -C $ArtifactsParentDir "./$ArtifactsLeafDir"
+    }
+
+    # Package debug symbols on macos
+    if ($Platform -eq "macos") {
+        $BuiltArtifacts = Get-ChildItem $ArtifactsDir -File
+        foreach ($Artifact in $BuiltArtifacts) {
+            if (Test-Path $Artifact) {
+                dsymutil $Artifact
+            }
+        }
+    }
 }
 
 ##############################################################
