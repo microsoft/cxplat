@@ -1,0 +1,79 @@
+name: Build Unix
+
+# The caller is responsible for making sure all options passed to this workflow are valid and compatible with each other.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        default: ''
+        type: string
+      config:
+        required: false
+        default: 'Release'
+        type: string
+        # options:
+        #   - Debug
+        #   - Release
+      plat:
+        required: false
+        type: string
+        default: 'linux'
+        # options:
+        #   - linux
+        #   - android
+        #   - ios
+        #   - macos
+      os:
+        required: false
+        type: string
+        default: 'ubuntu-20.04'
+        # options:
+        #   - ubuntu-20.04
+        #   - ubuntu-22.04
+        #   - macos-12
+      arch:
+        required: false
+        default: 'x64'
+        type: string
+        # options:
+        #   - x86
+        #   - x64
+        #   - arm
+        #   - arm64
+      clang:
+        required: false
+        default: ''
+        type: string
+
+permissions: read-all
+
+jobs:
+  build-unix-reuse:
+    name: Build
+    runs-on: ${{ inputs.os }}
+    container:
+      image: ${{ inputs.plat == 'linux' && format('ghcr.io/microsoft/msquic/linux-build-xcomp:{0}', inputs.os) || '' }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
+      with:
+        repository: microsoft/cxplat
+        ref: ${{ inputs.ref }}
+    - name: Set ownership
+      if: inputs.plat == 'linux'
+      run: |
+        # this is to fix GIT not liking owner of the checkout dir
+        chown -R $(id -u):$(id -g) $PWD
+    - name: Prepare Machine
+      shell: pwsh
+      run: scripts/prepare-machine.ps1 -ForBuild
+    - name: Build
+      shell: pwsh
+      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} ${{ inputs.clang }} -OneBranch
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
+      with:
+        name: ${{ inputs.config }}-${{ inputs.plat }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.clang }}
+        path: artifacts
