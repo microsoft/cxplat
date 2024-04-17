@@ -16,11 +16,6 @@ Abstract:
 extern "C" {
 #endif
 
-#define FOO 3
-
-extern char Bar;
-
-int Baz();
 
 #if defined(__cplusplus)
 }
