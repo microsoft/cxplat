@@ -38,9 +38,10 @@ Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 
 if ($PSVersionTable.PSVersion.Major -lt 7) {
+    # For convenience of locally building winkernel (which is typically done from a Developer shell for VS),
+    # exclude winkernel from the PowerShell core requirement.
     if ($Platform -ne "winkernel") {
-        Write-Error "[$(Get-Date)] Powershell 7 required"
-        exit
+        Write-Error "PowerShell v7.x or greater is needed for this script to work."
     }
 
     $IsWindows = $true

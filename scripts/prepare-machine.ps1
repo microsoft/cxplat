@@ -28,13 +28,12 @@ Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$PrepConfig = & (Join-Path $PSScriptRoot get-buildconfig.ps1)
-
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-    # This script requires PowerShell core (mostly for xplat stuff).
-    Write-Error ("`nPowerShell v7.x or greater is needed for this script to work. " +
-                 "Please visit https://github.com/microsoft/msquic/blob/main/docs/BUILD.md#powershell-usage")
+    # This script requires PowerShell core.
+    Write-Error "PowerShell v7.x or greater is needed for this script to work."
 }
+
+$PrepConfig = & (Join-Path $PSScriptRoot get-buildconfig.ps1)
 
 if (!$ForBuild) {
     # When no args are passed, assume we want to build and test everything

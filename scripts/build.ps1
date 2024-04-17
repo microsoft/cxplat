@@ -152,9 +152,10 @@ Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
 
 if ($PSVersionTable.PSVersion.Major -lt 7) {
+    # For convenience of locally building winkernel (which is typically done from a Developer shell for VS),
+    # exclude winkernel from the PowerShell core requirement.
     if ($Platform -ne "winkernel") {
-        Write-Error "[$(Get-Date)] Powershell 7 required"
-        exit
+        Write-Error "[$(Get-Date)] PowerShell v7.x or greater is needed for this script to work."
     }
 
     $IsWindows = $true
@@ -186,28 +187,25 @@ if ($Generator -eq "") {
 
 if (!$IsWindows -And $Platform -eq "uwp") {
     Write-Error "[$(Get-Date)] Cannot build uwp on non windows platforms"
-    exit
 }
 
 if (!$IsWindows -And ($Platform -eq "gamecore_console")) {
     Write-Error "[$(Get-Date)] Cannot build gamecore on non windows platforms"
-    exit
 }
 
 if ($Arch -ne "x64" -And ($Platform -eq "gamecore_console")) {
     Write-Error "[$(Get-Date)] Cannot build gamecore for non-x64 platforms"
-    exit
 }
 
 if ($Arch -eq "arm64ec") {
     if (!$IsWindows) {
-        Write-Error "Arm64EC is only supported on Windows"
+        Write-Error "[$(Get-Date)] Arm64EC is only supported on Windows"
     }
 }
 
 if ($Platform -eq "ios" -and !$Static) {
     $Static = $true
-    Write-Host "iOS can only be built as static"
+    Log "iOS can only be built as static"
 }
 
 if ($OfficialRelease) {
@@ -220,7 +218,7 @@ if ($OfficialRelease) {
         # for this magic git command!
         $Output = git describe --exact-match --tags $(git log -n1 --pretty='%h')
         if (!$Output.Contains("fatal: no tag exactly matches")) {
-            Write-Host "Configuring OfficialRelease for tag build"
+            Log "Configuring OfficialRelease for tag build"
             $OfficialRelease = $true
         }
     } catch { }
@@ -251,7 +249,7 @@ if (!(Test-Path $BuildDir)) { New-Item -Path $BuildDir -ItemType Directory -Forc
 
 if ($Clang) {
     if ($IsWindows) {
-        Write-Error "Clang is not supported on windows currently"
+        Write-Error "[$(Get-Date)] Clang is not supported on windows currently"
     }
     $env:CC = 'clang'
     $env:CXX = 'clang++'
@@ -295,7 +293,7 @@ function CMake-Generate {
                 "arm64ec" { $Arguments += "arm64ec" }
             }
         } else {
-            Write-Host "Non VS based generators must be run from a Visual Studio Developer Powershell Prompt matching the passed in architecture"
+            Log "Non VS based generators must be run from a Visual Studio Developer Powershell Prompt matching the passed in architecture"
             $Arguments += " -G $Generator"
         }
     } else {
@@ -417,7 +415,7 @@ function CMake-Generate {
     $Arguments += " -DCXPLAT_LIBRARY_NAME=$LibraryName"
     $Arguments += " ../../.."
 
-    Write-Host "Executing: $Arguments"
+    Log "Executing: $Arguments"
     CMake-Execute $Arguments
 }
 
@@ -436,7 +434,7 @@ function CMake-Build {
         $Arguments += " -- VERBOSE=1"
     }
 
-    Write-Host "Running: $Arguments"
+    Log "Running: $Arguments"
     CMake-Execute $Arguments
 }
 
@@ -446,12 +444,12 @@ function CMake-Build {
 
 if ($Platform -eq "winkernel") {
     # Restore Nuget packages.
-    Write-Host "Restoring packages..."
+    Log "Restoring packages..."
     msbuild cxplat.kernel.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
 
     if (!$ConfigureOnly) {
         # Build the code.
-        Write-Host "Building..."
+        Log "Building..."
         msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
     }
 } else {
