@@ -64,7 +64,7 @@
   <PropertyGroup>
     <TargetName>cxplat</TargetName>
     <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\bin\</OutDir>
+    <OutDir>$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />
