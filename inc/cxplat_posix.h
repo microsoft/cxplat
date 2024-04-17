@@ -16,17 +16,6 @@ Abstract:
 extern "C" {
 #endif
 
-//
-// Static Analysis Interfaces
-//
-
-#if defined(__clang__)
-#define CXPLAT_NO_SANITIZE(X) __attribute__((no_sanitize(X)))
-#else
-#define CXPLAT_NO_SANITIZE(X)
-#endif
-
-#define CXPLAT_ANALYSIS_ASSUME(X)
 
 #if defined(__cplusplus)
 }
