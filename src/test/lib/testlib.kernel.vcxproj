@@ -19,30 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ApiTest.cpp" />
     <ClCompile Include="BasicTest.cpp" />
-    <ClCompile Include="DatagramTest.cpp" />
-    <ClCompile Include="DataTest.cpp" />
-    <ClCompile Include="DrillDescriptor.cpp" />
-    <ClCompile Include="EventTest.cpp" />
-    <ClCompile Include="HandshakeTest.cpp" />
-    <ClCompile Include="MtuTest.cpp" />
-    <ClCompile Include="OwnershipTest.cpp" />
-    <ClCompile Include="PathTest.cpp" />
-    <ClCompile Include="QuicDrill.cpp" />
-    <ClCompile Include="TestConnection.cpp" />
-    <ClCompile Include="TestListener.cpp" />
-    <ClCompile Include="TestStream.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KArray.h" />
     <ClInclude Include="precomp.h" />
-    <ClInclude Include="TestHelpers.h" />
-    <ClInclude Include="..\MsQuicTests.h" />
+    <ClInclude Include="..\CxplatTests.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{A295E4D7-A50A-4771-8383-608258C23442}</ProjectGuid>
-    <TemplateGuid>{0a049372-4c4d-4ea0-a64e-dc6ad88ceca1}</TemplateGuid>
+    <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
+    <TemplateGuid>{1dc1438e-ecb5-4f28-b53e-b9409525591b}</TemplateGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <DriverType>KMDF</DriverType>
@@ -70,8 +55,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <TargetName>testlib</TargetName>
-    <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)_schannel\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)_schannel\bin\</OutDir>
+    <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />
@@ -81,7 +66,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\..\inc;$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)_schannel\inc;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;$(SolutionDir)inc;$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\inc;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
@@ -94,13 +79,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>QUIC_EVENTS_MANIFEST_ETW;QUIC_LOGS_MANIFEST_ETW;QUIC_DISABLE_0RTT_TESTS;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <PreprocessorDefinitions>QUIC_EVENTS_MANIFEST_ETW;QUIC_LOGS_MANIFEST_ETW;QUIC_DISABLE_0RTT_TESTS;SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>

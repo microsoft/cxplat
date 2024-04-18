@@ -10,21 +10,19 @@ Abstract:
 
 #pragma once
 
-#define QUIC_TEST_APIS 1
-#include "quic_platform.h"
-#include "quic_trace.h"
+#include "cxplat_trace.h"
 
-#if defined(_WIN32) && !defined(QUIC_RESTRICTED_BUILD)
+#if defined(_WIN32) && !defined(CXPLAT_RESTRICTED_BUILD)
 
-//#define QUIC_DRIVER_FILE_NAME  QUIC_DRIVER_NAME ".sys"
-//#define QUIC_IOCTL_PATH        "\\\\.\\\\" QUIC_DRIVER_NAME
+//#define CXPLAT_DRIVER_FILE_NAME  CXPLAT_DRIVER_NAME ".sys"
+//#define CXPLAT_IOCTL_PATH        "\\\\.\\\\" CXPLAT_DRIVER_NAME
 
 
-class QuicDriverService {
+class CxplatDriverService {
     SC_HANDLE ScmHandle;
     SC_HANDLE ServiceHandle;
 public:
-    QuicDriverService() :
+    CxplatDriverService() :
         ScmHandle(nullptr),
         ServiceHandle(nullptr) {
     }
@@ -32,12 +30,11 @@ public:
         _In_z_ const char* DriverName,
         _In_z_ const char* DependentFileNames
         ) {
-        uint32_t Error;
+        DWORD Error;
         ScmHandle = OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
         if (ScmHandle == nullptr) {
             Error = GetLastError();
-            QuicTraceEvent(
-                LibraryErrorStatus,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "GetFullPathName failed");
@@ -50,8 +47,7 @@ public:
                 DriverName,
                 SERVICE_ALL_ACCESS);
         if (ServiceHandle == nullptr) {
-            QuicTraceEvent(
-                LibraryErrorStatus,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                  GetLastError(),
                 "OpenService failed");
@@ -59,8 +55,7 @@ public:
             GetModuleFileNameA(NULL, DriverFilePath, MAX_PATH);
             char* PathEnd = strrchr(DriverFilePath, '\\');
             if (!PathEnd) {
-                QuicTraceEvent(
-                    LibraryError,
+                CxplatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to get currently executing module path");
                 return false;
@@ -74,15 +69,13 @@ public:
                     "%s.sys",
                     DriverName);
             if (PathResult <= 0 || (size_t)PathResult > RemainingLength) {
-                QuicTraceEvent(
-                    LibraryError,
+                CxplatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to create driver on disk file path");
                 return false;
             }
             if (GetFileAttributesA(DriverFilePath) == INVALID_FILE_ATTRIBUTES) {
-                QuicTraceEvent(
-                    LibraryError,
+                CxplatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to find driver on disk");
                 return false;
@@ -107,8 +100,7 @@ public:
                 if (Error == ERROR_SERVICE_EXISTS) {
                     goto QueryService;
                 }
-                QuicTraceEvent(
-                    LibraryErrorStatus,
+                CxplatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "CreateService failed");
@@ -127,10 +119,9 @@ public:
     }
     bool Start() {
         if (!StartServiceA(ServiceHandle, 0, nullptr)) {
-            uint32_t Error = GetLastError();
+            DWORD Error = GetLastError();
             if (Error != ERROR_SERVICE_ALREADY_RUNNING) {
-                QuicTraceEvent(
-                    LibraryErrorStatus,
+                CxplatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "StartService failed");
@@ -141,16 +132,15 @@ public:
     }
 };
 
-class QuicDriverClient {
+class CxplatDriverClient {
     HANDLE DeviceHandle;
 public:
-    QuicDriverClient() : DeviceHandle(INVALID_HANDLE_VALUE) { }
-    ~QuicDriverClient() { Uninitialize(); }
+    CxplatDriverClient() : DeviceHandle(INVALID_HANDLE_VALUE) { }
+    ~CxplatDriverClient() { Uninitialize(); }
     bool Initialize(
-        _In_ QUIC_RUN_CERTIFICATE_PARAMS* CertParams,
         _In_z_ const char* DriverName
         ) {
-        uint32_t Error;
+        DWORD Error;
         char IoctlPath[MAX_PATH];
         int PathResult =
             snprintf(
@@ -159,8 +149,7 @@ public:
                 "\\\\.\\\\%s",
                 DriverName);
         if (PathResult < 0 || PathResult >= sizeof(IoctlPath)) {
-            QuicTraceEvent(
-                LibraryError,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %s.",
                 "Creating Driver File Path failed");
             return false;
@@ -176,51 +165,39 @@ public:
                 nullptr);
         if (DeviceHandle == INVALID_HANDLE_VALUE) {
             Error = GetLastError();
-            QuicTraceEvent(
-                LibraryErrorStatus,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "CreateFile failed");
-            return false;
-        }
-        if (!Run(IOCTL_QUIC_SET_CERT_PARAMS, CertParams, sizeof(*CertParams), 30000)) {
-            CxPlatCloseHandle(DeviceHandle);
-            DeviceHandle = INVALID_HANDLE_VALUE;
-            QuicTraceEvent(
-                LibraryError,
-                "[ lib] ERROR, %s.",
-                "Run(IOCTL_QUIC_SET_CERT_PARAMS) failed");
             return false;
         }
         return true;
     }
     void Uninitialize() {
         if (DeviceHandle != INVALID_HANDLE_VALUE) {
-            CxPlatCloseHandle(DeviceHandle);
+            CloseHandle(DeviceHandle);
             DeviceHandle = INVALID_HANDLE_VALUE;
         }
     }
     bool Run(
-        _In_ uint32_t IoControlCode,
+        _In_ DWORD IoControlCode,
         _In_reads_bytes_opt_(InBufferSize)
             void* InBuffer,
-        _In_ uint32_t InBufferSize,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD InBufferSize,
+        _In_ DWORD TimeoutMs = 30000
         ) {
-        uint32_t Error;
+        DWORD Error;
         OVERLAPPED Overlapped = { 0 };
         Overlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (Overlapped.hEvent == nullptr) {
             Error = GetLastError();
-            QuicTraceEvent(
-                LibraryErrorStatus,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "CreateEvent failed");
             return false;
         }
-        QuicTraceLogVerbose(
-            TestSendIoctl,
+        CxplatTraceLogVerbose(
             "[test] Sending Write IOCTL %u with %u bytes.",
             IoGetFunctionCodeFromCtlCode(IoControlCode),
             InBufferSize);
@@ -233,9 +210,8 @@ public:
                 &Overlapped)) {
             Error = GetLastError();
             if (Error != ERROR_IO_PENDING) {
-                CxPlatCloseHandle(Overlapped.hEvent);
-                QuicTraceEvent(
-                    LibraryErrorStatus,
+                CloseHandle(Overlapped.hEvent);
+                CxplatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "DeviceIoControl Write failed");
@@ -254,53 +230,50 @@ public:
                 Error = ERROR_TIMEOUT;
                 CancelIoEx(DeviceHandle, &Overlapped);
             }
-            QuicTraceEvent(
-                LibraryErrorStatus,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "GetOverlappedResultEx Write failed");
         } else {
             Error = ERROR_SUCCESS;
         }
-        CxPlatCloseHandle(Overlapped.hEvent);
+        CloseHandle(Overlapped.hEvent);
         return Error == ERROR_SUCCESS;
     }
     bool Run(
-        _In_ uint32_t IoControlCode,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD IoControlCode,
+        _In_ DWORD TimeoutMs = 30000
         ) {
         return Run(IoControlCode, nullptr, 0, TimeoutMs);
     }
     template<class T>
     bool Run(
-        _In_ uint32_t IoControlCode,
+        _In_ DWORD IoControlCode,
         _In_ const T& Data,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD TimeoutMs = 30000
         ) {
         return Run(IoControlCode, (void*)&Data, sizeof(Data), TimeoutMs);
     }
     bool Read(
-        _In_ uint32_t IoControlCode,
+        _In_ DWORD IoControlCode,
         _Out_writes_bytes_opt_(OutBufferSize)
             void* OutBuffer,
-        _In_ uint32_t OutBufferSize,
-        _Out_opt_ uint32_t* OutBufferWritten,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD OutBufferSize,
+        _Out_opt_ DWORD* OutBufferWritten,
+        _In_ DWORD TimeoutMs = 30000
         ) {
-        uint32_t Error;
+        DWORD Error;
         OVERLAPPED Overlapped = { 0 };
         Overlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (!Overlapped.hEvent) {
             Error = GetLastError();
-            QuicTraceEvent(
-                LibraryErrorStatus,
+            CxplatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "CreateEvent failed");
             return false;
         }
-        QuicTraceLogVerbose(
-            TestReadIoctl,
+        CxplatTraceLogVerbose(
             "[test] Sending Read IOCTL %u.",
             IoGetFunctionCodeFromCtlCode(IoControlCode));
         if (!DeviceIoControl(
@@ -312,9 +285,8 @@ public:
                 &Overlapped)) {
             Error = GetLastError();
             if (Error != ERROR_IO_PENDING) {
-                CxPlatCloseHandle(Overlapped.hEvent);
-                QuicTraceEvent(
-                    LibraryErrorStatus,
+                CloseHandle(Overlapped.hEvent);
+                CxplatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "DeviceIoControl Write failed");
@@ -335,8 +307,7 @@ public:
                     GetOverlappedResult(DeviceHandle, &Overlapped, &dwBytesReturned, true);
                 }
             } else {
-                QuicTraceEvent(
-                    LibraryErrorStatus,
+                CxplatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "GetOverlappedResultEx Read failed");
@@ -345,14 +316,14 @@ public:
             Error = ERROR_SUCCESS;
             *OutBufferWritten = dwBytesReturned;
         }
-        CxPlatCloseHandle(Overlapped.hEvent);
+        CloseHandle(Overlapped.hEvent);
         return Error == ERROR_SUCCESS;
     }
 };
 
 #else
 
-class QuicDriverService {
+class CxplatDriverService {
 public:
     bool Initialize(
         _In_z_ const char* DriverName,
@@ -366,22 +337,20 @@ public:
     bool Start() { return false; }
 };
 
-class QuicDriverClient {
+class CxplatDriverClient {
 public:
     bool Initialize(
-        _In_ QUIC_RUN_CERTIFICATE_PARAMS* CertParams,
         _In_z_ const char* DriverName
     ) {
-        UNREFERENCED_PARAMETER(CertParams);
         UNREFERENCED_PARAMETER(DriverName);
         return false;
     }
     void Uninitialize() { }
     bool Run(
-        _In_ uint32_t IoControlCode,
+        _In_ DWORD IoControlCode,
         _In_ void* InBuffer,
-        _In_ uint32_t InBufferSize,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD InBufferSize,
+        _In_ DWORD TimeoutMs = 30000
         ) {
         UNREFERENCED_PARAMETER(IoControlCode);
         UNREFERENCED_PARAMETER(InBuffer);
@@ -391,27 +360,27 @@ public:
     }
     bool
     Run(
-        _In_ uint32_t IoControlCode,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD IoControlCode,
+        _In_ DWORD TimeoutMs = 30000
         ) {
         return Run(IoControlCode, nullptr, 0, TimeoutMs);
     }
     template<class T>
     bool
     Run(
-        _In_ uint32_t IoControlCode,
+        _In_ DWORD IoControlCode,
         _In_ const T& Data,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD TimeoutMs = 30000
         ) {
         return Run(IoControlCode, (void*)&Data, sizeof(Data), TimeoutMs);
     }
     bool Read(
-        _In_ uint32_t IoControlCode,
+        _In_ DWORD IoControlCode,
         _Out_writes_bytes_opt_(OutBufferSize)
             void* OutBuffer,
-        _In_ uint32_t OutBufferSize,
-        _Out_ uint32_t* OutBufferWritten,
-        _In_ uint32_t TimeoutMs = 30000
+        _In_ DWORD OutBufferSize,
+        _Out_ DWORD* OutBufferWritten,
+        _In_ DWORD TimeoutMs = 30000
         ) {
         UNREFERENCED_PARAMETER(IoControlCode);
         UNREFERENCED_PARAMETER(OutBuffer);

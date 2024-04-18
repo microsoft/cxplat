@@ -12,6 +12,9 @@ This script provides helpers for building cxplat.
 .PARAMETER Platform
     Specify which platform to build for.
 
+.PARAMETER DisableTest
+    Don't build the test directory.
+
 .PARAMETER Clean
     Deletes all previous build and configuration.
 
@@ -68,6 +71,9 @@ param (
     [Parameter(Mandatory = $false)]
     [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel")] # For future expansion
     [string]$Platform = "",
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DisableTest = $false,
 
     [Parameter(Mandatory = $false)]
     [switch]$Clean = $false,
@@ -306,6 +312,11 @@ function CMake-Generate {
 
     $Arguments += " -DCXPLAT_OUTPUT_DIR=""$ArtifactsDir"""
 
+    if ($Platform -ne "uwp" -and $Platform -ne "gamecore_console") {
+        if (!$DisableTest) {
+            $Arguments += " -DCXPLAT_BUILD_TEST=on"
+        }
+    }
     if (!$IsWindows) {
         $ConfigToBuild = $Config;
         if ($Config -eq "Release") {

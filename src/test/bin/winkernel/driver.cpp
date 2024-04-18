@@ -5,60 +5,48 @@
 
 Abstract:
 
-    QUIC Kernel Mode Test Driver
+    CXPLAT Kernel Mode Test Driver
 
 --*/
 
-#include "quic_platform.h"
-#include "MsQuicTests.h"
-#include <new.h>
+#include <ntddk.h>
+#include <wdf.h>
 
-#include "quic_trace.h"
-#ifdef QUIC_CLOG
-#include "driver.cpp.clog.h"
+#include "CxplatTests.h"
+
+#include "cxplat_trace.h"
+
+#ifndef KRTL_INIT_SEGMENT
+#define KRTL_INIT_SEGMENT "INIT"
+#endif
+#ifndef KRTL_PAGE_SEGMENT
+#define KRTL_PAGE_SEGMENT "PAGE"
+#endif
+#ifndef KRTL_NONPAGED_SEGMENT
+#define KRTL_NONPAGED_SEGMENT ".text"
 #endif
 
-EVT_WDF_DRIVER_UNLOAD QuicTestDriverUnload;
+// Use on code in the INIT segment. (Code is discarded after DriverEntry returns.)
+#define INITCODE __declspec(code_seg(KRTL_INIT_SEGMENT))
+
+// Use on pageable functions.
+#define PAGEDX __declspec(code_seg(KRTL_PAGE_SEGMENT))
+
+#define CXPLAT_POOL_TEST 'sTxC' // CxTs
+
+EVT_WDF_DRIVER_UNLOAD CxplatTestDriverUnload;
 
 _No_competing_thread_
 INITCODE
 NTSTATUS
-QuicTestCtlInitialize(
+CxplatTestCtlInitialize(
     _In_ WDFDRIVER Driver
     );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 VOID
-QuicTestCtlUninitialize(
+CxplatTestCtlUninitialize(
     );
-
-_Ret_maybenull_ _Post_writable_byte_size_(_Size)
-void* __cdecl operator new (size_t Size, const std::nothrow_t&) throw(){
-    return ExAllocatePool2(POOL_FLAG_NON_PAGED, Size, QUIC_POOL_TEST);
-}
-
-void __cdecl operator delete (/*_In_opt_*/ void* Mem) noexcept {
-    if (Mem != nullptr) {
-        ExFreePoolWithTag(Mem, QUIC_POOL_TEST);
-    }
-}
-
-void __cdecl operator delete (_In_opt_ void* Mem, _In_opt_ size_t) noexcept {
-    if (Mem != nullptr) {
-        ExFreePoolWithTag(Mem, QUIC_POOL_TEST);
-    }
-}
-
-_Ret_maybenull_ _Post_writable_byte_size_(_Size)
-void* __cdecl operator new[] (size_t Size, const std::nothrow_t&) throw(){
-    return ExAllocatePool2(POOL_FLAG_NON_PAGED, Size, QUIC_POOL_TEST);
-}
-
-void __cdecl operator delete[] (/*_In_opt_*/ void* Mem) {
-    if (Mem != nullptr) {
-        ExFreePoolWithTag(Mem, QUIC_POOL_TEST);
-    }
-}
 
 extern "C"
 INITCODE
@@ -99,28 +87,14 @@ Return Value:
     NTSTATUS Status;
     WDF_DRIVER_CONFIG Config;
     WDFDRIVER Driver;
-    BOOLEAN PlatformInitialized = FALSE;
-
-    CxPlatSystemLoad();
-
-    Status = CxPlatInitialize();
-    if (!NT_SUCCESS(Status)) {
-        QuicTraceEvent(
-            LibraryErrorStatus,
-            "[ lib] ERROR, %u, %s.",
-            Status,
-            "CxPlatInitialize failed");
-        goto Error;
-    }
-    PlatformInitialized = TRUE;
 
     //
     // Create the WdfDriver Object
     //
     WDF_DRIVER_CONFIG_INIT(&Config, NULL);
-    Config.EvtDriverUnload = QuicTestDriverUnload;
+    Config.EvtDriverUnload = CxplatTestDriverUnload;
     Config.DriverInitFlags = WdfDriverInitNonPnpDriver;
-    Config.DriverPoolTag = QUIC_POOL_TEST;
+    Config.DriverPoolTag = CXPLAT_POOL_TEST;
 
     Status =
         WdfDriverCreate(
@@ -130,7 +104,7 @@ Return Value:
             &Config,
             &Driver);
     if (!NT_SUCCESS(Status)) {
-        QuicTraceEvent(
+        CxplatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
@@ -141,30 +115,23 @@ Return Value:
     //
     // Initialize the device control interface.
     //
-    Status = QuicTestCtlInitialize(Driver);
+    Status = CxplatTestCtlInitialize(Driver);
     if (!NT_SUCCESS(Status)) {
-        QuicTraceEvent(
+        CxplatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
-            "QuicTestCtlInitialize failed");
+            "CxplatTestCtlInitialize failed");
         goto Error;
     }
 
-    QuicTestInitialize();
+    CxplatTestInitialize();
 
-    QuicTraceLogInfo(
+    CxplatTraceLogInfo(
         TestDriverStarted,
         "[test] Started");
 
 Error:
-
-    if (!NT_SUCCESS(Status)) {
-        if (PlatformInitialized) {
-            CxPlatUninitialize();
-        }
-        CxPlatSystemUnload();
-    }
 
     return Status;
 }
@@ -173,14 +140,14 @@ _Function_class_(EVT_WDF_DRIVER_UNLOAD)
 _IRQL_requires_same_
 _IRQL_requires_max_(PASSIVE_LEVEL)
 void
-QuicTestDriverUnload(
+CxplatTestDriverUnload(
     _In_ WDFDRIVER Driver
     )
 /*++
 
 Routine Description:
 
-    QuicTestDriverUnload will clean up any resources that were allocated for
+    CxplatTestDriverUnload will clean up any resources that were allocated for
     this driver.
 
 Arguments:
@@ -192,14 +159,11 @@ Arguments:
     UNREFERENCED_PARAMETER(Driver);
     NT_ASSERT(KeGetCurrentIrql() == PASSIVE_LEVEL);
 
-    QuicTestUninitialize();
+    CxplatTestUninitialize();
 
-    QuicTestCtlUninitialize();
+    CxplatTestCtlUninitialize();
 
-    QuicTraceLogInfo(
+    CxplatTraceLogInfo(
         TestDriverStopped,
         "[test] Stopped");
-
-    CxPlatUninitialize();
-    CxPlatSystemUnload();
 }

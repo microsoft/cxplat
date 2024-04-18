@@ -2,30 +2,28 @@
 # Licensed under the MIT License.
 
 set(SOURCES
-    quic_gtest.cpp
-    quic_gtest.h
+    cxplat_gtest.cpp
+    cxplat_gtest.h
 )
 
-add_executable(msquictest ${SOURCES})
+add_executable(cxplattest ${SOURCES})
 
-target_include_directories(msquictest PRIVATE ${PROJECT_SOURCE_DIR}/src/test)
+target_include_directories(cxplattest PRIVATE ${PROJECT_SOURCE_DIR}/src/test ${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/submodules/googletest/googletest/include)
 
-set_property(TARGET msquictest PROPERTY FOLDER "${QUIC_FOLDER_PREFIX}tests")
-set_property(TARGET msquictest APPEND PROPERTY BUILD_RPATH "$ORIGIN")
+target_compile_definitions(cxplattest INTERFACE ${CXPLAT_COMMON_DEFINES})
 
-target_link_libraries(msquictest msquic testlib)
+set_property(TARGET cxplattest PROPERTY FOLDER "${CXPLAT_FOLDER_PREFIX}tests")
+set_property(TARGET cxplattest APPEND PROPERTY BUILD_RPATH "$ORIGIN")
 
-if (BUILD_SHARED_LIBS)
-    target_link_libraries(msquictest platform)
-endif()
+target_link_libraries(cxplattest cxplat testlib)
+target_link_libraries(cxplattest gtest)
 
-target_link_libraries(msquictest inc gtest logging base_link)
 
 # At least /W3 must be used on all windows builds to pass compliance
 if(MSVC)
-    target_compile_options(msquictest PRIVATE /W3 /bigobj)
+    target_compile_options(cxplattest PRIVATE /W3 /bigobj)
 endif()
 
-add_test(NAME msquictest
-         COMMAND msquictest
-         WORKING_DIRECTORY ${QUIC_OUTPUT_DIR})
+add_test(NAME cxplattest
+         COMMAND cxplattest
+         WORKING_DIRECTORY ${CXPLAT_OUTPUT_DIR})

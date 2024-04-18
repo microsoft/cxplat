@@ -70,6 +70,7 @@ message(STATUS "Platform: ${CX_PLATFORM}")
 set(FILENAME_DEP_REPLACE "get_filename_component(SELF_DIR \"$\{CMAKE_CURRENT_LIST_FILE\}\" PATH)")
 set(SELF_DIR "$\{SELF_DIR\}")
 
+option(CXPLAT_BUILD_TEST "Builds the test code" OFF)
 option(CXPLAT_UWP_BUILD "Build for UWP" OFF)
 option(CXPLAT_GAMECORE_BUILD "Build for GameCore" OFF)
 option(CXPLAT_EMBED_GIT_HASH "Embed git commit hash in the binary" ON)
@@ -85,6 +86,11 @@ if (CXPLAT_GAMECORE_BUILD)
     if(${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION} VERSION_LESS "10.0.20348.0")
         message(FATAL_ERROR "gamecore builds require Windows 10 SDK version 20348 or later.")
     endif()
+endif()
+
+if (CXPLAT_UWP_BUILD OR CXPLAT_GAMECORE_BUILD)
+    message(STATUS "UWP And GameCore builds disable all executables")
+    set(CXPLAT_BUILD_TEST OFF)
 endif()
 
 if (NOT CXPLAT_BUILD_SHARED)
@@ -292,6 +298,8 @@ if(WIN32)
 
     endif()
 
+    list(APPEND CXPLAT_COMMON_DEFINES CX_PLATFORM_WINUSER)
+
     set(CXPLAT_C_FLAGS ${CXPLAT_COMMON_FLAGS})
     set(CXPLAT_CXX_FLAGS ${CXPLAT_COMMON_FLAGS} /EHsc /permissive-)
 
@@ -338,3 +346,45 @@ endif()
 
 # Product code
 add_subdirectory(src/lib/)
+
+# Test code
+if(CXPLAT_BUILD_TEST)
+    include(FetchContent)
+
+    enable_testing()
+
+    # Build the googletest framework.
+
+    # Enforce static builds for test artifacts
+    set(PREV_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS} CACHE INTERNAL "")
+    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+    set(BUILD_GMOCK OFF CACHE BOOL "Builds the googlemock subproject")
+    set(INSTALL_GTEST OFF CACHE BOOL "Enable installation of googletest. (Projects embedding googletest may want to turn this OFF.)")
+    FetchContent_Declare(
+        googletest
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/submodules/googletest
+    )
+    FetchContent_MakeAvailable(googletest)
+    set(BUILD_SHARED_LIBS ${PREV_BUILD_SHARED_LIBS} CACHE INTERNAL "")
+
+    set_property(TARGET gtest PROPERTY CXX_STANDARD 17)
+    set_property(TARGET gtest PROPERTY FOLDER "${CXPLAT_FOLDER_PREFIX}tests")
+
+    set_property(TARGET gtest_main PROPERTY CXX_STANDARD 17)
+    set_property(TARGET gtest_main PROPERTY FOLDER "${CXPLAT_FOLDER_PREFIX}tests")
+    set_property(TARGET gtest_main PROPERTY EXCLUDE_FROM_ALL ON)
+    set_property(TARGET gtest_main PROPERTY EXCLUDE_FROM_DEFAULT_BUILD ON)
+
+    if (HAS_SPECTRE)
+        target_compile_options(gtest PRIVATE /Qspectre)
+        target_compile_options(gtest_main PRIVATE /Qspectre)
+    endif()
+
+    if (HAS_GUARDCF)
+        target_compile_options(gtest PRIVATE /guard:cf)
+        target_compile_options(gtest_main PRIVATE /guard:cf)
+    endif()
+
+    add_subdirectory(src/test/lib)
+    add_subdirectory(src/test/bin)
+endif()

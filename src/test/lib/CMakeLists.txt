@@ -2,27 +2,13 @@
 # Licensed under the MIT License.
 
 set(SOURCES
-    ApiTest.cpp
     BasicTest.cpp
-    DatagramTest.cpp
-    DataTest.cpp
-    DrillDescriptor.cpp
-    EventTest.cpp
-    HandshakeTest.cpp
-    MtuTest.cpp
-    OwnershipTest.cpp
-    PathTest.cpp
-    QuicDrill.cpp
-    TestConnection.cpp
-    TestListener.cpp
-    TestStream.cpp
-    TestHelpers.h
 )
 
 add_library(testlib STATIC ${SOURCES})
 
-target_include_directories(testlib PRIVATE ${PROJECT_SOURCE_DIR}/src/test)
+target_include_directories(testlib PRIVATE ${PROJECT_SOURCE_DIR}/src/test ${PROJECT_SOURCE_DIR}/inc)
 
-target_link_libraries(testlib PRIVATE inc warnings)
+target_compile_definitions(testlib PRIVATE ${CXPLAT_COMMON_DEFINES})
 
-set_property(TARGET testlib PROPERTY FOLDER "${QUIC_FOLDER_PREFIX}tests")
+set_property(TARGET testlib PROPERTY FOLDER "${CXPLAT_FOLDER_PREFIX}tests")
