@@ -77,16 +77,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # config: ['Debug', 'Release']
-        config: ['Debug']
-        # plat: [linux, android]
-        plat: [linux]
-        # os: ['ubuntu-20.04', 'ubuntu-22.04']
-        os: ['ubuntu-22.04']
-        # arch: [x86, x64]
-        arch: [x64]
-        # clang: ['', '-Clang']
-        clang: ['']
+        config: ['Debug', 'Release']
+        plat: [linux, android]
+        os: ['ubuntu-20.04', 'ubuntu-22.04']
+        arch: [x86, x64]
+        clang: ['', '-Clang']
         exclude:
         # Android doesn't support x86
         - plat: android
