@@ -78,11 +78,9 @@ jobs:
           { config: "Debug", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
           { config: "Release", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
           { config: "Debug", plat: "windows", os: "windows-2019", arch: "x64" },
-          { config: "Release", plat: "windows", os: "windows-2019", arch: "x64" },
-          { config: "Debug", plat: "windows", os: "WinServerPrerelease", arch: "x64" },
-          { config: "Release", plat: "windows", os: "WinServerPrerelease", arch: "x64" }
+          { config: "Release", plat: "windows", os: "windows-2019", arch: "x64" }
         ]
-    runs-on: ${{ matrix.vec.plat == 'windows' && matrix.vec.os == 'WinServerPrerelease' && fromJson('[''self-hosted'', ''1ES.Pool=1es-msquic-pool'', ''1ES.ImageOverride=WinServerPrerelease'']') || matrix.vec.os }}
+    runs-on: ${{ matrix.vec.os }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633
