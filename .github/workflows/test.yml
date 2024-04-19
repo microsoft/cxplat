@@ -100,7 +100,7 @@ jobs:
       uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427
       if: matrix.vec.plat == 'linux'
       with:
-        name: ${{ matrix.vec.config }}-${{ matrix.vec.plat }}-${{ matrix.vec.os }}-${{ matrix.vec.arch }}
+        name: ${{ matrix.vec.config }}-${{ matrix.vec.plat }}-${{ matrix.vec.os }}-${{ matrix.vec.arch }}-
         path: artifacts
     - name: Fix permissions for Unix
       if: matrix.vec.plat == 'linux' || matrix.vec.plat == 'macos'
