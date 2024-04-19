@@ -154,7 +154,7 @@ if ($IsWindows -and !(Test-Administrator)) {
 
 # Validate the kernel switch.
 if ($Kernel -and !$IsWindows) {
-    Write-Error "-Kernel switch only supported on Windows";
+    Write-Error "-Kernel switch only supported on Windows"
 }
 
 $BuildConfig = & (Join-Path $PSScriptRoot get-buildconfig.ps1) -Arch $Arch -ExtraArtifactDir $ExtraArtifactDir -Config $Config
@@ -187,7 +187,7 @@ if ($IsWindows) {
 # Make sure the build is present.
 if (!(Test-Path $CxplatTest)) {
     $BuildScriptPath = Join-Path $RootDir "scripts"
-    $BuildScriptPath = Join-Path $BuildScriptPath "build.ps1")
+    $BuildScriptPath = Join-Path $BuildScriptPath "build.ps1"
     Write-Error "Build does not exist!`n `nRun the following to generate it:`n `n    $BuildScriptPath -Config $Config -Arch $Arch`n"
 }
 if ($Kernel) {
@@ -196,16 +196,8 @@ if ($Kernel) {
     }
 }
 
-$PfxFile = Join-Path $RootArtifactDir "selfsignedservercert.pfx"
-if (!(Test-Path $PfxFile)) {
-    $MyPath = Split-Path -Path $PSCommandPath -Parent
-    $ScriptPath = Join-Path $MyPath install-test-certificates.ps1
-
-    &$ScriptPath -OutputFile $PfxFile
-}
-
 # Build up all the arguments to pass to the Powershell script.
-$TestArguments =  "-IsolationMode $IsolationMode -PfxPath $PfxFile"
+$TestArguments =  "-IsolationMode $IsolationMode"
 
 if ($Kernel) {
     $TestArguments += " -Kernel $KernelPath"
@@ -230,9 +222,6 @@ if ($InitialBreak) {
 }
 if ($BreakOnFailure) {
     $TestArguments += " -BreakOnFailure"
-}
-if ("None" -ne $LogProfile) {
-    $TestArguments += " -LogProfile $LogProfile"
 }
 if ($CompressOutput) {
     $TestArguments += " -CompressOutput"
