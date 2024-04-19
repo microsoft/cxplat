@@ -40,9 +40,9 @@
 #error "Unsupported Platform"
 #endif
 
-#include "TestAbstractionLayer.h"
-
 #include "cxplat.h"
+
+#include "TestAbstractionLayer.h"
 
 #if defined(_ARM64_) || defined(_ARM64EC_)
 #pragma optimize("", off)
