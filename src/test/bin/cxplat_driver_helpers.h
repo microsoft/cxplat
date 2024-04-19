@@ -30,7 +30,7 @@ public:
         _In_z_ const char* DriverName,
         _In_z_ const char* DependentFileNames
         ) {
-        DWORD Error;
+        unsigned long Error;
         ScmHandle = OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
         if (ScmHandle == nullptr) {
             Error = GetLastError();
@@ -119,7 +119,7 @@ public:
     }
     bool Start() {
         if (!StartServiceA(ServiceHandle, 0, nullptr)) {
-            DWORD Error = GetLastError();
+            unsigned long Error = GetLastError();
             if (Error != ERROR_SERVICE_ALREADY_RUNNING) {
                 CxplatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
@@ -140,7 +140,7 @@ public:
     bool Initialize(
         _In_z_ const char* DriverName
         ) {
-        DWORD Error;
+        unsigned long Error;
         char IoctlPath[MAX_PATH];
         int PathResult =
             snprintf(
@@ -180,13 +180,13 @@ public:
         }
     }
     bool Run(
-        _In_ DWORD IoControlCode,
+        _In_ unsigned long IoControlCode,
         _In_reads_bytes_opt_(InBufferSize)
             void* InBuffer,
-        _In_ DWORD InBufferSize,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long InBufferSize,
+        _In_ unsigned long TimeoutMs = 30000
         ) {
-        DWORD Error;
+        unsigned long Error;
         OVERLAPPED Overlapped = { 0 };
         Overlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (Overlapped.hEvent == nullptr) {
@@ -218,7 +218,7 @@ public:
                 return false;
             }
         }
-        DWORD dwBytesReturned;
+        unsigned long dwBytesReturned;
         if (!GetOverlappedResultEx(
                 DeviceHandle,
                 &Overlapped,
@@ -241,28 +241,28 @@ public:
         return Error == ERROR_SUCCESS;
     }
     bool Run(
-        _In_ DWORD IoControlCode,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long IoControlCode,
+        _In_ unsigned long TimeoutMs = 30000
         ) {
         return Run(IoControlCode, nullptr, 0, TimeoutMs);
     }
     template<class T>
     bool Run(
-        _In_ DWORD IoControlCode,
+        _In_ unsigned long IoControlCode,
         _In_ const T& Data,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long TimeoutMs = 30000
         ) {
         return Run(IoControlCode, (void*)&Data, sizeof(Data), TimeoutMs);
     }
     bool Read(
-        _In_ DWORD IoControlCode,
+        _In_ unsigned long IoControlCode,
         _Out_writes_bytes_opt_(OutBufferSize)
             void* OutBuffer,
-        _In_ DWORD OutBufferSize,
-        _Out_opt_ DWORD* OutBufferWritten,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long OutBufferSize,
+        _Out_opt_ unsigned long* OutBufferWritten,
+        _In_ unsigned long TimeoutMs = 30000
         ) {
-        DWORD Error;
+        unsigned long Error;
         OVERLAPPED Overlapped = { 0 };
         Overlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (!Overlapped.hEvent) {
@@ -293,7 +293,7 @@ public:
                 return false;
             }
         }
-        DWORD dwBytesReturned;
+        unsigned long dwBytesReturned;
         if (!GetOverlappedResultEx(
                 DeviceHandle,
                 &Overlapped,
@@ -323,6 +323,8 @@ public:
 
 #else
 
+#define UNREFERENCED_PARAMETER(param)
+
 class CxplatDriverService {
 public:
     bool Initialize(
@@ -347,10 +349,10 @@ public:
     }
     void Uninitialize() { }
     bool Run(
-        _In_ DWORD IoControlCode,
+        _In_ unsigned long IoControlCode,
         _In_ void* InBuffer,
-        _In_ DWORD InBufferSize,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long InBufferSize,
+        _In_ unsigned long TimeoutMs = 30000
         ) {
         UNREFERENCED_PARAMETER(IoControlCode);
         UNREFERENCED_PARAMETER(InBuffer);
@@ -360,27 +362,27 @@ public:
     }
     bool
     Run(
-        _In_ DWORD IoControlCode,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long IoControlCode,
+        _In_ unsigned long TimeoutMs = 30000
         ) {
         return Run(IoControlCode, nullptr, 0, TimeoutMs);
     }
     template<class T>
     bool
     Run(
-        _In_ DWORD IoControlCode,
+        _In_ unsigned long IoControlCode,
         _In_ const T& Data,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long TimeoutMs = 30000
         ) {
         return Run(IoControlCode, (void*)&Data, sizeof(Data), TimeoutMs);
     }
     bool Read(
-        _In_ DWORD IoControlCode,
+        _In_ unsigned long IoControlCode,
         _Out_writes_bytes_opt_(OutBufferSize)
             void* OutBuffer,
-        _In_ DWORD OutBufferSize,
-        _Out_ DWORD* OutBufferWritten,
-        _In_ DWORD TimeoutMs = 30000
+        _In_ unsigned long OutBufferSize,
+        _Out_ unsigned long* OutBufferWritten,
+        _In_ unsigned long TimeoutMs = 30000
         ) {
         UNREFERENCED_PARAMETER(IoControlCode);
         UNREFERENCED_PARAMETER(OutBuffer);

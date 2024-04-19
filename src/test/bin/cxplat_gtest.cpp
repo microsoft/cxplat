@@ -7,13 +7,14 @@
 
 #include "cxplat_gtest.h"
 
+#ifndef _WIN32
+#define _vsnprintf_s(dst, dst_len, flag, format, ...) vsnprintf(dst, dst_len, format, __VA_ARGS__)
+#endif
+
 bool TestingKernelMode = false;
 const char* OsRunner = nullptr;
 uint32_t Timeout = UINT32_MAX;
 CxplatDriverClient DriverClient;
-
-bool IsWindows2019() { return OsRunner && strcmp(OsRunner, "windows-2019") == 0; }
-bool IsWindows2022() { return OsRunner && strcmp(OsRunner, "windows-2022") == 0; }
 
 class CxplatTestEnvironment : public ::testing::Environment {
     CxplatDriverService DriverService;
