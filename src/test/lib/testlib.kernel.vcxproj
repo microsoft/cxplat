@@ -19,14 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cxplat_winkernel.c" />
+    <ClCompile Include="BasicTest.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cxplat_winkernel.h" />
+    <ClInclude Include="precomp.h" />
+    <ClInclude Include="..\CxplatTests.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1e494654-9bfd-492f-bc31-36e2c73a782e}</ProjectGuid>
-    <TemplateGuid>{8a9e2f9b-135b-4281-ad25-ed1a4dadb967}</TemplateGuid>
+    <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
+    <TemplateGuid>{1dc1438e-ecb5-4f28-b53e-b9409525591b}</TemplateGuid>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <DriverType>KMDF</DriverType>
@@ -53,18 +54,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <CXPLAT_VER_BUILD_ID Condition="'$(CXPLAT_VER_BUILD_ID)' == ''">0</CXPLAT_VER_BUILD_ID>
-    <CXPLAT_VER_SUFFIX Condition="'$(CXPLAT_VER_SUFFIX)' == ''">-private</CXPLAT_VER_SUFFIX>
-    <CXPLAT_VER_GIT_HASH Condition="'$(CXPLAT_VER_GIT_HASH)' == ''">0</CXPLAT_VER_GIT_HASH>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetName>cxplat</TargetName>
+    <TargetName>testlib</TargetName>
     <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />
@@ -74,7 +66,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;$(SolutionDir)inc;$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\inc;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
@@ -87,13 +79,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>

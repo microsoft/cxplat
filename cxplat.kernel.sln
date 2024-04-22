@@ -5,6 +5,13 @@ VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{BC8DFCC2-43CB-481C-988F-C39903116328}") = "cxplat.kernel", "src\lib\cxplat.kernel.vcxproj", "{E680F075-FEE8-421B-A9F1-DAD0A1C537D3}"
 EndProject
+Project("{BC8DFCC2-43CB-481C-988F-C39903116328}") = "testlib.kernel", "src\test\lib\testlib.kernel.vcxproj", "{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}"
+    ProjectSection(ProjectDependencies) = postProject
+        {E680F075-FEE8-421B-A9F1-DAD0A1C537D3} = {E680F075-FEE8-421B-A9F1-DAD0A1C537D3}
+    EndProjectSection
+EndProject
+Project("{BC8DFCC2-43CB-481C-988F-C39903116328}") = "cxplattest.kernel", "src\test\bin\winkernel\cxplattest.kernel.vcxproj", "{1E494654-9BFD-492F-BC31-36E2C73A782E}"
+EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
         Debug|ARM64 = Debug|ARM64
@@ -25,6 +32,30 @@ Global
         {E680F075-FEE8-421B-A9F1-DAD0A1C537D3}.Release|x64.ActiveCfg = Release|x64
         {E680F075-FEE8-421B-A9F1-DAD0A1C537D3}.Release|x64.Build.0 = Release|x64
         {E680F075-FEE8-421B-A9F1-DAD0A1C537D3}.Release|x64.Deploy.0 = Release|x64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Debug|ARM64.ActiveCfg = Debug|ARM64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Debug|ARM64.Build.0 = Debug|ARM64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Debug|ARM64.Deploy.0 = Debug|ARM64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Debug|x64.ActiveCfg = Debug|x64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Debug|x64.Build.0 = Debug|x64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Debug|x64.Deploy.0 = Debug|x64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Release|ARM64.ActiveCfg = Release|ARM64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Release|ARM64.Build.0 = Release|ARM64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Release|ARM64.Deploy.0 = Release|ARM64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Release|x64.ActiveCfg = Release|x64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Release|x64.Build.0 = Release|x64
+        {6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}.Release|x64.Deploy.0 = Release|x64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Debug|ARM64.ActiveCfg = Debug|ARM64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Debug|ARM64.Build.0 = Debug|ARM64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Debug|ARM64.Deploy.0 = Debug|ARM64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Debug|x64.ActiveCfg = Debug|x64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Debug|x64.Build.0 = Debug|x64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Debug|x64.Deploy.0 = Debug|x64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Release|ARM64.ActiveCfg = Release|ARM64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Release|ARM64.Build.0 = Release|ARM64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Release|ARM64.Deploy.0 = Release|ARM64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Release|x64.ActiveCfg = Release|x64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Release|x64.Build.0 = Release|x64
+        {1E494654-9BFD-492F-BC31-36E2C73A782E}.Release|x64.Deploy.0 = Release|x64
     EndGlobalSection
     GlobalSection(SolutionProperties) = preSolution
         HideSolutionNode = FALSE

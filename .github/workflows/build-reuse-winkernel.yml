@@ -58,6 +58,9 @@ jobs:
     - name: Build
       shell: pwsh
       run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }}
+    - name: Sign Kernel
+      shell: pwsh
+      run: scripts/sign.ps1 -Config ${{ inputs.config }} -Arch ${{ inputs.arch }}
     - name: Upload build artifacts
       uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba
       with:
