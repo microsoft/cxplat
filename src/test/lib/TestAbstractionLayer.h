@@ -42,10 +42,10 @@ Abstract:
     } \
 }
 
-#define TEST_HRESULT(__condition) { \
-    HRESULT __hr = __condition; \
-    if (FAILED(__hr)) { \
-        TEST_FAILURE(#__condition " failed, 0x%x", __hr); \
+#define TEST_CXPLAT(__condition) { \
+    CXPLAT_STATUS __status = __condition; \
+    if (CXPLAT_FAILED(__status)) { \
+        TEST_FAILURE(#__condition " failed, 0x%x", __status); \
         return; \
     } \
 }

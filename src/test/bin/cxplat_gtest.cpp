@@ -105,12 +105,12 @@ struct TestLoggerT {
     }
 };
 
-TEST(DummySuite, Dummy) {
-    TestLogger Logger("CxPlatTestDummy");
+TEST(CryptSuite, Random) {
+    TestLogger Logger("CxPlatTestCryptRandom");
     if (TestingKernelMode) {
-        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_DUMMY));
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_CRYPT_RANDOM));
     } else {
-        CxPlatTestDummy();
+        CxPlatTestCryptRandom();
     }
 }
 

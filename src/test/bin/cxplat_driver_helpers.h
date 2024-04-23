@@ -323,8 +323,6 @@ public:
 
 #else
 
-#define UNREFERENCED_PARAMETER(param)
-
 class CxPlatDriverService {
 public:
     bool Initialize(

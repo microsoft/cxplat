@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cxplat_winkernel.h" />
+    <ClInclude Include="cxplat_trace.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1e494654-9bfd-492f-bc31-36e2c73a782e}</ProjectGuid>
@@ -74,7 +75,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>

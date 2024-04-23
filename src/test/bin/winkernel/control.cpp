@@ -469,8 +469,8 @@ CxPlatTestCtlEvtIoDeviceControl(
 
     switch (IoControlCode) {
 
-    case IOCTL_CXPLAT_RUN_DUMMY:
-        CxPlatTestCtlRun(CxPlatTestDummy());
+    case IOCTL_CXPLAT_RUN_CRYPT_RANDOM:
+        CxPlatTestCtlRun(CxPlatTestCryptRandom());
         break;
 
     default:
