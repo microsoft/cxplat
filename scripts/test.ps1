@@ -1,7 +1,7 @@
 <#
 
 .SYNOPSIS
-This script runs the Cxplat tests.
+This script runs the CxPlat tests.
 
 .PARAMETER Config
     Specifies the build configuration to test.
@@ -173,19 +173,19 @@ if ("" -ne $ExtraArtifactDir -and $Kernel) {
 }
 
 # Path to the cxplattest executable.
-$CxplatTest = $null
+$CxPlatTest = $null
 $KernelPath = $null;
 if ($IsWindows) {
-    $CxplatTest = Join-Path $RootArtifactDir  "cxplattest.exe"
+    $CxPlatTest = Join-Path $RootArtifactDir  "cxplattest.exe"
     $KernelPath = Join-Path $RootDir "\artifacts\bin\winkernel\$($Arch)_$($Config)"
 }  elseif ($IsLinux -or $IsMacOS) {
-    $CxplatTest = Join-Path $RootArtifactDir "cxplattest"
+    $CxPlatTest = Join-Path $RootArtifactDir "cxplattest"
 } else {
     Write-Error "Unsupported platform type!"
 }
 
 # Make sure the build is present.
-if (!(Test-Path $CxplatTest)) {
+if (!(Test-Path $CxPlatTest)) {
     $BuildScriptPath = Join-Path $RootDir "scripts"
     $BuildScriptPath = Join-Path $BuildScriptPath "build.ps1"
     Write-Error "Build does not exist!`n `nRun the following to generate it:`n `n    $BuildScriptPath -Config $Config -Arch $Arch`n"
@@ -254,5 +254,5 @@ for ($iteration = 1; $iteration -le $NumIterations; $iteration++) {
         Write-Host "------- Iteration $iteration -------"
     }
     # Run the script.
-    Invoke-Expression ($RunTest + " -Path $CxplatTest " + $TestArguments)
+    Invoke-Expression ($RunTest + " -Path $CxPlatTest " + $TestArguments)
 }

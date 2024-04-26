@@ -18,11 +18,11 @@ Abstract:
 //#define CXPLAT_IOCTL_PATH        "\\\\.\\\\" CXPLAT_DRIVER_NAME
 
 
-class CxplatDriverService {
+class CxPlatDriverService {
     SC_HANDLE ScmHandle;
     SC_HANDLE ServiceHandle;
 public:
-    CxplatDriverService() :
+    CxPlatDriverService() :
         ScmHandle(nullptr),
         ServiceHandle(nullptr) {
     }
@@ -34,7 +34,7 @@ public:
         ScmHandle = OpenSCManager(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
         if (ScmHandle == nullptr) {
             Error = GetLastError();
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "GetFullPathName failed");
@@ -47,7 +47,7 @@ public:
                 DriverName,
                 SERVICE_ALL_ACCESS);
         if (ServiceHandle == nullptr) {
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                  GetLastError(),
                 "OpenService failed");
@@ -55,7 +55,7 @@ public:
             GetModuleFileNameA(NULL, DriverFilePath, MAX_PATH);
             char* PathEnd = strrchr(DriverFilePath, '\\');
             if (!PathEnd) {
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to get currently executing module path");
                 return false;
@@ -69,13 +69,13 @@ public:
                     "%s.sys",
                     DriverName);
             if (PathResult <= 0 || (size_t)PathResult > RemainingLength) {
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to create driver on disk file path");
                 return false;
             }
             if (GetFileAttributesA(DriverFilePath) == INVALID_FILE_ATTRIBUTES) {
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to find driver on disk");
                 return false;
@@ -100,7 +100,7 @@ public:
                 if (Error == ERROR_SERVICE_EXISTS) {
                     goto QueryService;
                 }
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "CreateService failed");
@@ -121,7 +121,7 @@ public:
         if (!StartServiceA(ServiceHandle, 0, nullptr)) {
             unsigned long Error = GetLastError();
             if (Error != ERROR_SERVICE_ALREADY_RUNNING) {
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "StartService failed");
@@ -132,11 +132,11 @@ public:
     }
 };
 
-class CxplatDriverClient {
+class CxPlatDriverClient {
     HANDLE DeviceHandle;
 public:
-    CxplatDriverClient() : DeviceHandle(INVALID_HANDLE_VALUE) { }
-    ~CxplatDriverClient() { Uninitialize(); }
+    CxPlatDriverClient() : DeviceHandle(INVALID_HANDLE_VALUE) { }
+    ~CxPlatDriverClient() { Uninitialize(); }
     bool Initialize(
         _In_z_ const char* DriverName
         ) {
@@ -149,7 +149,7 @@ public:
                 "\\\\.\\\\%s",
                 DriverName);
         if (PathResult < 0 || PathResult >= sizeof(IoctlPath)) {
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %s.",
                 "Creating Driver File Path failed");
             return false;
@@ -165,7 +165,7 @@ public:
                 nullptr);
         if (DeviceHandle == INVALID_HANDLE_VALUE) {
             Error = GetLastError();
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "CreateFile failed");
@@ -191,13 +191,13 @@ public:
         Overlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (Overlapped.hEvent == nullptr) {
             Error = GetLastError();
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "CreateEvent failed");
             return false;
         }
-        CxplatTraceLogVerbose(
+        CxPlatTraceLogVerbose(
             "[test] Sending Write IOCTL %u with %u bytes.",
             IoGetFunctionCodeFromCtlCode(IoControlCode),
             InBufferSize);
@@ -211,7 +211,7 @@ public:
             Error = GetLastError();
             if (Error != ERROR_IO_PENDING) {
                 CloseHandle(Overlapped.hEvent);
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "DeviceIoControl Write failed");
@@ -230,7 +230,7 @@ public:
                 Error = ERROR_TIMEOUT;
                 CancelIoEx(DeviceHandle, &Overlapped);
             }
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "GetOverlappedResultEx Write failed");
@@ -267,13 +267,13 @@ public:
         Overlapped.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
         if (!Overlapped.hEvent) {
             Error = GetLastError();
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "CreateEvent failed");
             return false;
         }
-        CxplatTraceLogVerbose(
+        CxPlatTraceLogVerbose(
             "[test] Sending Read IOCTL %u.",
             IoGetFunctionCodeFromCtlCode(IoControlCode));
         if (!DeviceIoControl(
@@ -286,7 +286,7 @@ public:
             Error = GetLastError();
             if (Error != ERROR_IO_PENDING) {
                 CloseHandle(Overlapped.hEvent);
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "DeviceIoControl Write failed");
@@ -307,7 +307,7 @@ public:
                     GetOverlappedResult(DeviceHandle, &Overlapped, &dwBytesReturned, true);
                 }
             } else {
-                CxplatTraceEvent(
+                CxPlatTraceEvent(
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "GetOverlappedResultEx Read failed");
@@ -325,7 +325,7 @@ public:
 
 #define UNREFERENCED_PARAMETER(param)
 
-class CxplatDriverService {
+class CxPlatDriverService {
 public:
     bool Initialize(
         _In_z_ const char* DriverName,
@@ -339,7 +339,7 @@ public:
     bool Start() { return false; }
 };
 
-class CxplatDriverClient {
+class CxPlatDriverClient {
 public:
     bool Initialize(
         _In_z_ const char* DriverName

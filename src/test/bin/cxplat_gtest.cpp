@@ -14,10 +14,10 @@
 bool TestingKernelMode = false;
 const char* OsRunner = nullptr;
 uint32_t Timeout = UINT32_MAX;
-CxplatDriverClient DriverClient;
+CxPlatDriverClient DriverClient;
 
-class CxplatTestEnvironment : public ::testing::Environment {
-    CxplatDriverService DriverService;
+class CxPlatTestEnvironment : public ::testing::Environment {
+    CxPlatDriverService DriverService;
 public:
     void SetUp() override {
         if (TestingKernelMode) {
@@ -29,7 +29,7 @@ public:
             ASSERT_TRUE(DriverClient.Initialize(DriverName));
         } else {
             printf("Initializing for User Mode tests\n");
-            CxplatTestInitialize();
+            CxPlatTestInitialize();
         }
     }
     void TearDown() override {
@@ -37,7 +37,7 @@ public:
             DriverClient.Uninitialize();
             DriverService.Uninitialize();
         } else {
-            CxplatTestUninitialize();
+            CxPlatTestUninitialize();
         }
     }
 };
@@ -61,7 +61,7 @@ LogTestFailure(
     va_start(Args, Format);
     (void)_vsnprintf_s(Buffer, sizeof(Buffer), _TRUNCATE, Format, Args);
     va_end(Args);
-    CxplatTraceLogError(
+    CxPlatTraceLogError(
         TestLogFailure,
         "[test] FAILURE - %s:%d - %s",
         File,
@@ -73,13 +73,13 @@ LogTestFailure(
 struct TestLogger {
     const char* TestName;
     TestLogger(const char* Name) : TestName(Name) {
-        CxplatTraceLogInfo(
+        CxPlatTraceLogInfo(
             TestCaseStart,
             "[test] START %s",
             TestName);
     }
     ~TestLogger() {
-        CxplatTraceLogInfo(
+        CxPlatTraceLogInfo(
             TestCaseEnd,
             "[test] END %s",
             TestName);
@@ -91,14 +91,14 @@ struct TestLoggerT {
     const char* TestName;
     TestLoggerT(const char* Name, const T& Params) : TestName(Name) {
         std::ostringstream stream; stream << Params;
-        CxplatTraceLogInfo(
+        CxPlatTraceLogInfo(
             TestCaseTStart,
             "[test] START %s, %s",
             TestName,
             stream.str().c_str());
     }
     ~TestLoggerT() {
-        CxplatTraceLogInfo(
+        CxPlatTraceLogInfo(
             TestCaseTEnd,
             "[test] END %s",
             TestName);
@@ -106,11 +106,11 @@ struct TestLoggerT {
 };
 
 TEST(DummySuite, Dummy) {
-    TestLogger Logger("CxplatTestDummy");
+    TestLogger Logger("CxPlatTestDummy");
     if (TestingKernelMode) {
         ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_DUMMY));
     } else {
-        CxplatTestDummy();
+        CxPlatTestDummy();
     }
 }
 
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
             }
         }
     }
-    ::testing::AddGlobalTestEnvironment(new CxplatTestEnvironment);
+    ::testing::AddGlobalTestEnvironment(new CxPlatTestEnvironment);
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

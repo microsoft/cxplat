@@ -9,7 +9,7 @@ Abstract:
 
 --*/
 
-#include "CxplatTests.h"
+#include "CxPlatTests.h"
 
 #define TEST_FAILURE(Format, ...) \
     LogTestFailure(__FILE__, __FUNCTION__, __LINE__, Format, ##__VA_ARGS__)

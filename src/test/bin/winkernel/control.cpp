@@ -13,7 +13,7 @@ Abstract:
 #include <wdf.h>
 #include <ntstrsafe.h>
 
-#include "CxplatTests.h"
+#include "CxPlatTests.h"
 
 #include "cxplat_trace.h"
 
@@ -33,8 +33,8 @@ Abstract:
 // Use on pageable functions.
 #define PAGEDX __declspec(code_seg(KRTL_PAGE_SEGMENT))
 
-DECLARE_CONST_UNICODE_STRING(CxplatTestCtlDeviceName, L"\\Device\\" CXPLAT_DRIVER_NAME);
-DECLARE_CONST_UNICODE_STRING(CxplatTestCtlDeviceSymLink, L"\\DosDevices\\" CXPLAT_DRIVER_NAME);
+DECLARE_CONST_UNICODE_STRING(CxPlatTestCtlDeviceName, L"\\Device\\" CXPLAT_DRIVER_NAME);
+DECLARE_CONST_UNICODE_STRING(CxPlatTestCtlDeviceSymLink, L"\\DosDevices\\" CXPLAT_DRIVER_NAME);
 
 typedef struct CXPLAT_DEVICE_EXTENSION {
     EX_PUSH_LOCK Lock;
@@ -45,7 +45,7 @@ typedef struct CXPLAT_DEVICE_EXTENSION {
 
 } CXPLAT_DEVICE_EXTENSION;
 
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(CXPLAT_DEVICE_EXTENSION, CxplatTestCtlGetDeviceContext);
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(CXPLAT_DEVICE_EXTENSION, CxPlatTestCtlGetDeviceContext);
 
 typedef struct CXPLAT_TEST_CLIENT
 {
@@ -54,23 +54,23 @@ typedef struct CXPLAT_TEST_CLIENT
 
 } CXPLAT_TEST_CLIENT;
 
-WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(CXPLAT_TEST_CLIENT, CxplatTestCtlGetFileContext);
+WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(CXPLAT_TEST_CLIENT, CxPlatTestCtlGetFileContext);
 
-EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL CxplatTestCtlEvtIoDeviceControl;
-EVT_WDF_IO_QUEUE_IO_CANCELED_ON_QUEUE CxplatTestCtlEvtIoCanceled;
+EVT_WDF_IO_QUEUE_IO_DEVICE_CONTROL CxPlatTestCtlEvtIoDeviceControl;
+EVT_WDF_IO_QUEUE_IO_CANCELED_ON_QUEUE CxPlatTestCtlEvtIoCanceled;
 
-PAGEDX EVT_WDF_DEVICE_FILE_CREATE CxplatTestCtlEvtFileCreate;
-PAGEDX EVT_WDF_FILE_CLOSE CxplatTestCtlEvtFileClose;
-PAGEDX EVT_WDF_FILE_CLEANUP CxplatTestCtlEvtFileCleanup;
+PAGEDX EVT_WDF_DEVICE_FILE_CREATE CxPlatTestCtlEvtFileCreate;
+PAGEDX EVT_WDF_FILE_CLOSE CxPlatTestCtlEvtFileClose;
+PAGEDX EVT_WDF_FILE_CLEANUP CxPlatTestCtlEvtFileCleanup;
 
-WDFDEVICE CxplatTestCtlDevice = nullptr;
-CXPLAT_DEVICE_EXTENSION* CxplatTestCtlExtension = nullptr;
-CXPLAT_TEST_CLIENT* CxplatTestClient = nullptr;
+WDFDEVICE CxPlatTestCtlDevice = nullptr;
+CXPLAT_DEVICE_EXTENSION* CxPlatTestCtlExtension = nullptr;
+CXPLAT_TEST_CLIENT* CxPlatTestClient = nullptr;
 
 _No_competing_thread_
 INITCODE
 NTSTATUS
-CxplatTestCtlInitialize(
+CxPlatTestCtlInitialize(
     _In_ WDFDRIVER Driver
     )
 {
@@ -88,7 +88,7 @@ CxplatTestCtlInitialize(
             Driver,
             &SDDL_DEVOBJ_SYS_ALL_ADM_ALL);
     if (DeviceInit == nullptr) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryError,
             "[ lib] ERROR, %s.",
             "WdfControlDeviceInitAllocate failed");
@@ -99,9 +99,9 @@ CxplatTestCtlInitialize(
     Status =
         WdfDeviceInitAssignName(
             DeviceInit,
-            &CxplatTestCtlDeviceName);
+            &CxPlatTestCtlDeviceName);
     if (!NT_SUCCESS(Status)) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
@@ -111,9 +111,9 @@ CxplatTestCtlInitialize(
 
     WDF_FILEOBJECT_CONFIG_INIT(
         &FileConfig,
-        CxplatTestCtlEvtFileCreate,
-        CxplatTestCtlEvtFileClose,
-        CxplatTestCtlEvtFileCleanup);
+        CxPlatTestCtlEvtFileCreate,
+        CxPlatTestCtlEvtFileClose,
+        CxPlatTestCtlEvtFileCleanup);
     FileConfig.FileObjectClass = WdfFileObjectWdfCanUseFsContext2;
 
     WDF_OBJECT_ATTRIBUTES_INIT_CONTEXT_TYPE(&Attribs, CXPLAT_TEST_CLIENT);
@@ -129,7 +129,7 @@ CxplatTestCtlInitialize(
             &Attribs,
             &Device);
     if (!NT_SUCCESS(Status)) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
@@ -137,14 +137,14 @@ CxplatTestCtlInitialize(
         goto Error;
     }
 
-    DeviceContext = CxplatTestCtlGetDeviceContext(Device);
+    DeviceContext = CxPlatTestCtlGetDeviceContext(Device);
     RtlZeroMemory(DeviceContext, sizeof(CXPLAT_DEVICE_EXTENSION));
     ExInitializePushLock(&DeviceContext->Lock);
     InitializeListHead(&DeviceContext->ClientList);
 
-    Status = WdfDeviceCreateSymbolicLink(Device, &CxplatTestCtlDeviceSymLink);
+    Status = WdfDeviceCreateSymbolicLink(Device, &CxPlatTestCtlDeviceSymLink);
     if (!NT_SUCCESS(Status)) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
@@ -153,8 +153,8 @@ CxplatTestCtlInitialize(
     }
 
     WDF_IO_QUEUE_CONFIG_INIT_DEFAULT_QUEUE(&QueueConfig, WdfIoQueueDispatchParallel);
-    QueueConfig.EvtIoDeviceControl = CxplatTestCtlEvtIoDeviceControl;
-    QueueConfig.EvtIoCanceledOnQueue = CxplatTestCtlEvtIoCanceled;
+    QueueConfig.EvtIoDeviceControl = CxPlatTestCtlEvtIoDeviceControl;
+    QueueConfig.EvtIoCanceledOnQueue = CxPlatTestCtlEvtIoCanceled;
 
     __analysis_assume(QueueConfig.EvtIoStop != 0);
     Status =
@@ -166,7 +166,7 @@ CxplatTestCtlInitialize(
     __analysis_assume(QueueConfig.EvtIoStop == 0);
 
     if (!NT_SUCCESS(Status)) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
@@ -174,12 +174,12 @@ CxplatTestCtlInitialize(
         goto Error;
     }
 
-    CxplatTestCtlDevice = Device;
-    CxplatTestCtlExtension = DeviceContext;
+    CxPlatTestCtlDevice = Device;
+    CxPlatTestCtlExtension = DeviceContext;
 
     WdfControlFinishInitializing(Device);
 
-    CxplatTraceLogVerbose(
+    CxPlatTraceLogVerbose(
         TestControlInitialized,
         "[test] Control interface initialized");
 
@@ -194,22 +194,22 @@ Error:
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 VOID
-CxplatTestCtlUninitialize(
+CxPlatTestCtlUninitialize(
     )
 {
-    CxplatTraceLogVerbose(
+    CxPlatTraceLogVerbose(
         TestControlUninitializing,
         "[test] Control interface uninitializing");
 
-    if (CxplatTestCtlDevice != nullptr) {
-        NT_ASSERT(CxplatTestCtlExtension != nullptr);
-        CxplatTestCtlExtension = nullptr;
+    if (CxPlatTestCtlDevice != nullptr) {
+        NT_ASSERT(CxPlatTestCtlExtension != nullptr);
+        CxPlatTestCtlExtension = nullptr;
 
-        WdfObjectDelete(CxplatTestCtlDevice);
-        CxplatTestCtlDevice = nullptr;
+        WdfObjectDelete(CxPlatTestCtlDevice);
+        CxPlatTestCtlDevice = nullptr;
     }
 
-    CxplatTraceLogVerbose(
+    CxPlatTraceLogVerbose(
         TestControlUninitialized,
         "[test] Control interface uninitialized");
 }
@@ -217,7 +217,7 @@ CxplatTestCtlUninitialize(
 PAGEDX
 _Use_decl_annotations_
 VOID
-CxplatTestCtlEvtFileCreate(
+CxPlatTestCtlEvtFileCreate(
     _In_ WDFDEVICE /* Device */,
     _In_ WDFREQUEST Request,
     _In_ WDFFILEOBJECT FileObject
@@ -228,12 +228,12 @@ CxplatTestCtlEvtFileCreate(
     PAGED_CODE();
 
     KeEnterGuardedRegion();
-    ExAcquirePushLockExclusive(&CxplatTestCtlExtension->Lock);
+    ExAcquirePushLockExclusive(&CxPlatTestCtlExtension->Lock);
 
     do
     {
-        if (CxplatTestCtlExtension->ClientListSize >= 1) {
-            CxplatTraceEvent(
+        if (CxPlatTestCtlExtension->ClientListSize >= 1) {
+            CxPlatTraceEvent(
                 LibraryError,
                 "[ lib] ERROR, %s.",
                 "Already have max clients");
@@ -241,9 +241,9 @@ CxplatTestCtlEvtFileCreate(
             break;
         }
 
-        CXPLAT_TEST_CLIENT* Client = CxplatTestCtlGetFileContext(FileObject);
+        CXPLAT_TEST_CLIENT* Client = CxPlatTestCtlGetFileContext(FileObject);
         if (Client == nullptr) {
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 LibraryError,
                 "[ lib] ERROR, %s.",
                 "nullptr File context in FileCreate");
@@ -256,10 +256,10 @@ CxplatTestCtlEvtFileCreate(
         //
         // Insert into the client list
         //
-        InsertTailList(&CxplatTestCtlExtension->ClientList, &Client->Link);
-        CxplatTestCtlExtension->ClientListSize++;
+        InsertTailList(&CxPlatTestCtlExtension->ClientList, &Client->Link);
+        CxPlatTestCtlExtension->ClientListSize++;
 
-        CxplatTraceLogInfo(
+        CxPlatTraceLogInfo(
             TestControlClientCreated,
             "[test] Client %p created",
             Client);
@@ -267,11 +267,11 @@ CxplatTestCtlEvtFileCreate(
         //
         // TODO: Add multiple device client support?
         //
-        CxplatTestClient = Client;
+        CxPlatTestClient = Client;
     }
     while (false);
 
-    ExReleasePushLockExclusive(&CxplatTestCtlExtension->Lock);
+    ExReleasePushLockExclusive(&CxPlatTestCtlExtension->Lock);
     KeLeaveGuardedRegion();
 
     WdfRequestComplete(Request, Status);
@@ -280,7 +280,7 @@ CxplatTestCtlEvtFileCreate(
 PAGEDX
 _Use_decl_annotations_
 VOID
-CxplatTestCtlEvtFileClose(
+CxPlatTestCtlEvtFileClose(
     _In_ WDFFILEOBJECT /* FileObject */
     )
 {
@@ -290,7 +290,7 @@ CxplatTestCtlEvtFileClose(
 PAGEDX
 _Use_decl_annotations_
 VOID
-CxplatTestCtlEvtFileCleanup(
+CxPlatTestCtlEvtFileCleanup(
     _In_ WDFFILEOBJECT FileObject
     )
 {
@@ -298,32 +298,32 @@ CxplatTestCtlEvtFileCleanup(
 
     KeEnterGuardedRegion();
 
-    CXPLAT_TEST_CLIENT* Client = CxplatTestCtlGetFileContext(FileObject);
+    CXPLAT_TEST_CLIENT* Client = CxPlatTestCtlGetFileContext(FileObject);
     if (Client != nullptr) {
 
-        ExAcquirePushLockExclusive(&CxplatTestCtlExtension->Lock);
+        ExAcquirePushLockExclusive(&CxPlatTestCtlExtension->Lock);
 
         //
         // Remove the device client from the list
         //
         RemoveEntryList(&Client->Link);
-        CxplatTestCtlExtension->ClientListSize--;
+        CxPlatTestCtlExtension->ClientListSize--;
 
-        ExReleasePushLockExclusive(&CxplatTestCtlExtension->Lock);
+        ExReleasePushLockExclusive(&CxPlatTestCtlExtension->Lock);
 
-        CxplatTraceLogInfo(
+        CxPlatTraceLogInfo(
             TestControlClientCleaningUp,
             "[test] Client %p cleaning up",
             Client);
 
-        CxplatTestClient = nullptr;
+        CxPlatTestClient = nullptr;
     }
 
     KeLeaveGuardedRegion();
 }
 
 VOID
-CxplatTestCtlEvtIoCanceled(
+CxPlatTestCtlEvtIoCanceled(
     _In_ WDFQUEUE /* Queue */,
     _In_ WDFREQUEST Request
     )
@@ -336,13 +336,13 @@ CxplatTestCtlEvtIoCanceled(
         goto error;
     }
 
-    CXPLAT_TEST_CLIENT* Client = CxplatTestCtlGetFileContext(FileObject);
+    CXPLAT_TEST_CLIENT* Client = CxPlatTestCtlGetFileContext(FileObject);
     if (Client == nullptr) {
         Status = STATUS_DEVICE_NOT_READY;
         goto error;
     }
 
-    CxplatTraceLogWarning(
+    CxPlatTraceLogWarning(
         TestControlClientCanceledRequest,
         "[test] Client %p canceled request %p",
         Client,
@@ -368,13 +368,13 @@ static_assert(
 typedef union {
 } CXPLAT_IOCTL_PARAMS;
 
-#define CxplatTestCtlRun(X) \
+#define CxPlatTestCtlRun(X) \
     Client->TestFailure = false; \
     X; \
     Status = Client->TestFailure ? STATUS_FAIL_FAST_EXCEPTION : STATUS_SUCCESS;
 
 VOID
-CxplatTestCtlEvtIoDeviceControl(
+CxPlatTestCtlEvtIoDeviceControl(
     _In_ WDFQUEUE /* Queue */,
     _In_ WDFREQUEST Request,
     _In_ size_t /* OutputBufferLength */,
@@ -388,7 +388,7 @@ CxplatTestCtlEvtIoDeviceControl(
 
     if (KeGetCurrentIrql() > PASSIVE_LEVEL) {
         Status = STATUS_NOT_SUPPORTED;
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryError,
             "[ lib] ERROR, %s.",
             "IOCTL not supported greater than PASSIVE_LEVEL");
@@ -398,27 +398,27 @@ CxplatTestCtlEvtIoDeviceControl(
     FileObject = WdfRequestGetFileObject(Request);
     if (FileObject == nullptr) {
         Status = STATUS_DEVICE_NOT_READY;
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryError,
             "[ lib] ERROR, %s.",
             "WdfRequestGetFileObject failed");
         goto Error;
     }
 
-    Client = CxplatTestCtlGetFileContext(FileObject);
+    Client = CxPlatTestCtlGetFileContext(FileObject);
     if (Client == nullptr) {
         Status = STATUS_DEVICE_NOT_READY;
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryError,
             "[ lib] ERROR, %s.",
-            "CxplatTestCtlGetFileContext failed");
+            "CxPlatTestCtlGetFileContext failed");
         goto Error;
     }
 
     ULONG FunctionCode = IoGetFunctionCodeFromCtlCode(IoControlCode);
     if (FunctionCode == 0 || FunctionCode > CXPLAT_MAX_IOCTL_FUNC_CODE) {
         Status = STATUS_NOT_IMPLEMENTED;
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             FunctionCode,
@@ -428,7 +428,7 @@ CxplatTestCtlEvtIoDeviceControl(
 
     if (InputBufferLength < CXPLAT_IOCTL_BUFFER_SIZES[FunctionCode]) {
         Status = STATUS_INSUFFICIENT_RESOURCES;
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             FunctionCode,
@@ -445,14 +445,14 @@ CxplatTestCtlEvtIoDeviceControl(
                 (void**)&Params,
                 nullptr);
         if (!NT_SUCCESS(Status)) {
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 LibraryErrorStatus,
                 "[ lib] ERROR, %u, %s.",
                 Status,
                 "WdfRequestRetrieveInputBuffer failed");
             goto Error;
         } else if (Params == nullptr) {
-            CxplatTraceEvent(
+            CxPlatTraceEvent(
                 LibraryError,
                 "[ lib] ERROR, %s.",
                 "WdfRequestRetrieveInputBuffer failed to return parameter buffer");
@@ -461,7 +461,7 @@ CxplatTestCtlEvtIoDeviceControl(
         }
     }
 
-    CxplatTraceLogInfo(
+    CxPlatTraceLogInfo(
         TestControlClientIoctl,
         "[test] Client %p executing IOCTL %u",
         Client,
@@ -470,7 +470,7 @@ CxplatTestCtlEvtIoDeviceControl(
     switch (IoControlCode) {
 
     case IOCTL_CXPLAT_RUN_DUMMY:
-        CxplatTestCtlRun(CxplatTestDummy());
+        CxPlatTestCtlRun(CxPlatTestDummy());
         break;
 
     default:
@@ -480,7 +480,7 @@ CxplatTestCtlEvtIoDeviceControl(
 
 Error:
 
-    CxplatTraceLogInfo(
+    CxPlatTraceLogInfo(
         TestControlClientIoctlComplete,
         "[test] Client %p completing request, 0x%x",
         Client,
@@ -524,20 +524,20 @@ Return Value:
     UNREFERENCED_PARAMETER(Line);
 
     NT_ASSERT(KeGetCurrentIrql() == PASSIVE_LEVEL);
-    CxplatTestClient->TestFailure = true;
+    CxPlatTestClient->TestFailure = true;
 
     va_list Args;
     va_start(Args, Format);
     (void)_vsnprintf_s(Buffer, sizeof(Buffer), _TRUNCATE, Format, Args);
     va_end(Args);
 
-    CxplatTraceLogError(
+    CxPlatTraceLogError(
         TestDriverFailureLocation,
         "[test] File: %s, Function: %s, Line: %d",
         File,
         Function,
         Line);
-    CxplatTraceLogError(
+    CxPlatTraceLogError(
         TestDriverFailure,
         "[test] FAIL: %s",
         Buffer);

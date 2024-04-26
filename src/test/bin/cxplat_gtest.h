@@ -40,7 +40,7 @@
 #endif
 
 #include "cxplat.h"
-#include "CxplatTests.h"
+#include "CxPlatTests.h"
 #include "cxplat_trace.h"
 #include "cxplat_driver_helpers.h"
 #undef min // gtest headers conflict with previous definitions of min/max.

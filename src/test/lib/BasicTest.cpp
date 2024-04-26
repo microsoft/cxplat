@@ -11,17 +11,17 @@ Abstract:
 
 #include "precomp.h"
 
-void CxplatTestInitialize()
+void CxPlatTestInitialize()
 {
     return;
 }
 
-void CxplatTestUninitialize()
+void CxPlatTestUninitialize()
 {
     return;
 }
 
-void CxplatTestDummy()
+void CxPlatTestDummy()
 {
     return;
 }
