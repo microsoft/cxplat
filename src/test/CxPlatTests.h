@@ -5,7 +5,7 @@
 
 Abstract:
 
-    Interface for the Platform Independent Cxplat Tests
+    Interface for the Platform Independent CxPlat Tests
 
 --*/
 
@@ -13,14 +13,14 @@ Abstract:
 extern "C" {
 #endif
 
-void CxplatTestInitialize();
-void CxplatTestUninitialize();
+void CxPlatTestInitialize();
+void CxPlatTestUninitialize();
 
 //
 // Dummy Tests
 //
 
-void CxplatTestDummy();
+void CxPlatTestDummy();
 
 
 //

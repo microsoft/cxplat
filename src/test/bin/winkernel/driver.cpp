@@ -12,7 +12,7 @@ Abstract:
 #include <ntddk.h>
 #include <wdf.h>
 
-#include "CxplatTests.h"
+#include "CxPlatTests.h"
 
 #include "cxplat_trace.h"
 
@@ -34,18 +34,18 @@ Abstract:
 
 #define CXPLAT_POOL_TEST 'sTxC' // CxTs
 
-EVT_WDF_DRIVER_UNLOAD CxplatTestDriverUnload;
+EVT_WDF_DRIVER_UNLOAD CxPlatTestDriverUnload;
 
 _No_competing_thread_
 INITCODE
 NTSTATUS
-CxplatTestCtlInitialize(
+CxPlatTestCtlInitialize(
     _In_ WDFDRIVER Driver
     );
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
 VOID
-CxplatTestCtlUninitialize(
+CxPlatTestCtlUninitialize(
     );
 
 extern "C"
@@ -92,7 +92,7 @@ Return Value:
     // Create the WdfDriver Object
     //
     WDF_DRIVER_CONFIG_INIT(&Config, NULL);
-    Config.EvtDriverUnload = CxplatTestDriverUnload;
+    Config.EvtDriverUnload = CxPlatTestDriverUnload;
     Config.DriverInitFlags = WdfDriverInitNonPnpDriver;
     Config.DriverPoolTag = CXPLAT_POOL_TEST;
 
@@ -104,7 +104,7 @@ Return Value:
             &Config,
             &Driver);
     if (!NT_SUCCESS(Status)) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
@@ -115,19 +115,19 @@ Return Value:
     //
     // Initialize the device control interface.
     //
-    Status = CxplatTestCtlInitialize(Driver);
+    Status = CxPlatTestCtlInitialize(Driver);
     if (!NT_SUCCESS(Status)) {
-        CxplatTraceEvent(
+        CxPlatTraceEvent(
             LibraryErrorStatus,
             "[ lib] ERROR, %u, %s.",
             Status,
-            "CxplatTestCtlInitialize failed");
+            "CxPlatTestCtlInitialize failed");
         goto Error;
     }
 
-    CxplatTestInitialize();
+    CxPlatTestInitialize();
 
-    CxplatTraceLogInfo(
+    CxPlatTraceLogInfo(
         TestDriverStarted,
         "[test] Started");
 
@@ -140,14 +140,14 @@ _Function_class_(EVT_WDF_DRIVER_UNLOAD)
 _IRQL_requires_same_
 _IRQL_requires_max_(PASSIVE_LEVEL)
 void
-CxplatTestDriverUnload(
+CxPlatTestDriverUnload(
     _In_ WDFDRIVER Driver
     )
 /*++
 
 Routine Description:
 
-    CxplatTestDriverUnload will clean up any resources that were allocated for
+    CxPlatTestDriverUnload will clean up any resources that were allocated for
     this driver.
 
 Arguments:
@@ -159,11 +159,11 @@ Arguments:
     UNREFERENCED_PARAMETER(Driver);
     NT_ASSERT(KeGetCurrentIrql() == PASSIVE_LEVEL);
 
-    CxplatTestUninitialize();
+    CxPlatTestUninitialize();
 
-    CxplatTestCtlUninitialize();
+    CxPlatTestCtlUninitialize();
 
-    CxplatTraceLogInfo(
+    CxPlatTraceLogInfo(
         TestDriverStopped,
         "[test] Stopped");
 }

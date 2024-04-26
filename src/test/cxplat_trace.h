@@ -1,8 +1,8 @@
 #pragma once
 
-#define CxplatTraceLogError(Fmt, ...)
-#define CxplatTraceLogWarning(Fmt, ...)
-#define CxplatTraceLogInfo(Fmt, ...)
-#define CxplatTraceLogVerbose(Fmt, ...)
+#define CxPlatTraceLogError(Fmt, ...)
+#define CxPlatTraceLogWarning(Fmt, ...)
+#define CxPlatTraceLogInfo(Fmt, ...)
+#define CxPlatTraceLogVerbose(Fmt, ...)
 
-#define CxplatTraceEvent(Fmt, ...)
+#define CxPlatTraceEvent(Fmt, ...)

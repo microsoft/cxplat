@@ -23,7 +23,7 @@
     <ClCompile Include="control.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\CxplatTests.h" />
+    <ClInclude Include="..\..\CxPlatTests.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)\src\lib\cxplat.kernel.vcxproj">

@@ -23,7 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />
-    <ClInclude Include="..\CxplatTests.h" />
+    <ClInclude Include="..\CxPlatTests.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
