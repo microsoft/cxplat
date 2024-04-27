@@ -120,7 +120,7 @@ jobs:
       timeout-minutes: 5
       run: scripts/test.ps1 -Config ${{ matrix.vec.config }} -Arch ${{ matrix.vec.arch }} -OsRunner ${{ matrix.vec.os }} -GHA -GenerateXmlResults
     - name: Upload on Failure
-      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
       if: failure()
       with:
         name: BVT-${{ matrix.vec.config }}-${{ matrix.vec.plat }}-${{ matrix.vec.os }}-${{ matrix.vec.arch }}
@@ -158,7 +158,7 @@ jobs:
       timeout-minutes: 5
       run: scripts/test.ps1 -Config ${{ matrix.vec.config }} -Arch ${{ matrix.vec.arch }} -GHA -GenerateXmlResults -Kernel
     - name: Upload on Failure
-      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
       if: failure()
       with:
         name: BVT-Kernel-${{ matrix.vec.config }}-${{ matrix.vec.plat }}-${{ matrix.vec.os }}-${{ matrix.vec.arch }}
