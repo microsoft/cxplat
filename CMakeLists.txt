@@ -70,6 +70,8 @@ message(STATUS "Platform: ${CX_PLATFORM}")
 set(FILENAME_DEP_REPLACE "get_filename_component(SELF_DIR \"$\{CMAKE_CURRENT_LIST_FILE\}\" PATH)")
 set(SELF_DIR "$\{SELF_DIR\}")
 
+enable_testing()
+
 option(CXPLAT_BUILD_TEST "Builds the test code" OFF)
 option(CXPLAT_UWP_BUILD "Build for UWP" OFF)
 option(CXPLAT_GAMECORE_BUILD "Build for GameCore" OFF)
@@ -93,9 +95,7 @@ if (CXPLAT_UWP_BUILD OR CXPLAT_GAMECORE_BUILD)
     set(CXPLAT_BUILD_TEST OFF)
 endif()
 
-if (NOT CXPLAT_BUILD_SHARED)
-    cmake_minimum_required(VERSION 3.20)
-endif()
+cmake_minimum_required(VERSION 3.20)
 
 if (CXPLAT_PDBALTPATH AND MSVC)
 #    Disabled in all cases because generation is broken.
@@ -130,6 +130,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CXPLAT_OUTPUT_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CXPLAT_OUTPUT_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CXPLAT_OUTPUT_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CXPLAT_OUTPUT_DIR})
+
+set(CXPLAT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 if (WIN32)
     set(CXPLAT_WARNING_FLAGS /WX /W4 /sdl /wd4206 CACHE INTERNAL "")
@@ -168,14 +170,26 @@ else()
     include(CheckSymbolExists)
     include(CheckFunctionExists)
     include(CheckIncludeFile)
+    check_symbol_exists(_SC_PHYS_PAGES unistd.h HAS__SC_PHYS_PAGES)
+    check_function_exists(sysconf HAS_SYSCONF)
 
     if (CX_PLATFORM STREQUAL "linux")
         include(CheckCCompilerFlag)
+    elseif(CX_PLATFORM STREQUAL "darwin")
+        check_function_exists(sysctl HAS_SYSCTL)
     endif()
 
     set(CXPLAT_COMMON_FLAGS "")
     set(CXPLAT_COMMON_DEFINES _GNU_SOURCE)
-
+    if (HAS__SC_PHYS_PAGES)
+         list(APPEND CXPLAT_COMMON_DEFINES HAS__SC_PHYS_PAGES)
+    endif()
+    if (HAS_SYSCONF)
+         list(APPEND CXPLAT_COMMON_DEFINES HAS_SYSCONF)
+    endif()
+    if (HAS_SYSCTL)
+         list(APPEND CXPLAT_COMMON_DEFINES HAS_SYSCTL)
+    endif()
     set(CXPLAT_WARNING_FLAGS -Werror -Wall -Wextra -Wformat=2 -Wno-type-limits
         -Wno-unknown-pragmas -Wno-multichar -Wno-missing-field-initializers
         CACHE INTERNAL "")
@@ -346,6 +360,8 @@ else() #!WIN32
     set(CXPLAT_C_FLAGS ${CXPLAT_COMMON_FLAGS})
     set(CXPLAT_CXX_FLAGS ${CXPLAT_COMMON_FLAGS})
 endif()
+
+add_subdirectory(src/inc)
 
 # Product code
 add_subdirectory(src/lib/)

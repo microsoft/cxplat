@@ -17,10 +17,10 @@ void CxPlatTestInitialize();
 void CxPlatTestUninitialize();
 
 //
-// Dummy Tests
+// Crypt Tests
 //
 
-void CxPlatTestDummy();
+void CxPlatTestCryptRandom();
 
 
 //
@@ -77,7 +77,7 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 // IOCTL Interface
 //
 
-#define IOCTL_CXPLAT_RUN_DUMMY \
+#define IOCTL_CXPLAT_RUN_CRYPT_RANDOM \
     CXPLAT_CTL_CODE(1, METHOD_BUFFERED, FILE_WRITE_DATA)
 
 #define CXPLAT_MAX_IOCTL_FUNC_CODE 1

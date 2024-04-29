@@ -8,16 +8,14 @@ set(SOURCES
 
 add_executable(cxplattest ${SOURCES})
 
-target_include_directories(cxplattest PRIVATE ${PROJECT_SOURCE_DIR}/src/test ${PROJECT_SOURCE_DIR}/inc ${PROJECT_SOURCE_DIR}/submodules/googletest/googletest/include)
-
-target_compile_definitions(cxplattest INTERFACE ${CXPLAT_COMMON_DEFINES})
+target_include_directories(cxplattest PRIVATE ${PROJECT_SOURCE_DIR}/src/test ${PROJECT_SOURCE_DIR}/src/inc ${PROJECT_SOURCE_DIR}/submodules/googletest/googletest/include)
 
 set_property(TARGET cxplattest PROPERTY FOLDER "${CXPLAT_FOLDER_PREFIX}tests")
 set_property(TARGET cxplattest APPEND PROPERTY BUILD_RPATH "$ORIGIN")
 
 target_link_libraries(cxplattest cxplat testlib)
-target_link_libraries(cxplattest gtest)
-
+target_link_libraries(cxplattest cxplat)
+target_link_libraries(cxplattest inc gtest base_link)
 
 # At least /W3 must be used on all windows builds to pass compliance
 if(MSVC)
