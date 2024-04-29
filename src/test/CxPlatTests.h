@@ -22,6 +22,15 @@ void CxPlatTestUninitialize();
 
 void CxPlatTestCryptRandom();
 
+//
+// Memory/Allocation Tests
+//
+
+void CxPlatTestMemoryBasic();
+#if DEBUG
+void CxPlatTestMemoryFailureInjection();
+#endif
+
 
 //
 // Platform Specific Functions
@@ -80,4 +89,7 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 #define IOCTL_CXPLAT_RUN_CRYPT_RANDOM \
     CXPLAT_CTL_CODE(1, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-#define CXPLAT_MAX_IOCTL_FUNC_CODE 1
+#define IOCTL_CXPLAT_RUN_MEMORY_BASIC \
+    CXPLAT_CTL_CODE(2, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+#define CXPLAT_MAX_IOCTL_FUNC_CODE 2

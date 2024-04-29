@@ -41,6 +41,7 @@ typedef UINT64 uint64_t;
 #define CXPLAT_SUCCEEDED(X)                   NT_SUCCESS(X)
 
 #define CXPLAT_STATUS_SUCCESS                 STATUS_SUCCESS                    // 0x0
+#define CXPLAT_STATUS_OUT_OF_MEMORY           STATUS_NO_MEMORY                  // 0xc0000017
 
 //
 // Code Annotations
@@ -123,6 +124,19 @@ CxPlatLogAssert(
 #define CXPLAT_DBG_ASSERT(_exp)          CXPLAT_ASSERT_NOOP(_exp, CXPLAT_WIDE_STRING(#_exp))
 #define CXPLAT_DBG_ASSERTMSG(_exp, _msg) CXPLAT_ASSERT_NOOP(_exp, CXPLAT_WIDE_STRING(_msg))
 #endif
+
+//
+// Allocation/Memory Interfaces
+//
+
+#define CXPLAT_ALLOC_PAGED(Size, Tag) ExAllocatePool2(POOL_FLAG_PAGED | POOL_FLAG_UNINITIALIZED, Size, Tag)
+#define CXPLAT_ALLOC_NONPAGED(Size, Tag) ExAllocatePool2(POOL_FLAG_NON_PAGED | POOL_FLAG_UNINITIALIZED, Size, Tag)
+#define CXPLAT_FREE(Mem, Tag) ExFreePoolWithTag((void*)Mem, Tag)
+
+#define CxPlatZeroMemory RtlZeroMemory
+#define CxPlatCopyMemory RtlCopyMemory
+#define CxPlatMoveMemory RtlMoveMemory
+#define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
 // Crypto Interfaces

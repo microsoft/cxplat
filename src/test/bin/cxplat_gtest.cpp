@@ -114,6 +114,26 @@ TEST(CryptSuite, Random) {
     }
 }
 
+TEST(MemorySuite, Basic) {
+    TestLogger Logger("CxPlatTestMemoryBasic");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_MEMORY_BASIC));
+    } else {
+        CxPlatTestMemoryBasic();
+    }
+}
+
+#if DEBUG
+TEST(MemorySuite, FailureInjection) {
+    TestLogger Logger("CxPlatTestMemoryFailureInjection");
+    if (TestingKernelMode) {
+        GTEST_SKIP_("winkernel platform does not currently support failure injection");
+    } else {
+        CxPlatTestMemoryBasic();
+    }
+}
+#endif
+
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {
         if (strcmp("--kernel", argv[i]) == 0) {

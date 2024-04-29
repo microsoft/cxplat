@@ -7,6 +7,20 @@ typedef struct CX_PLATFORM {
     // Random number algorithm loaded for DISPATCH_LEVEL usage.
     //
     BCRYPT_ALG_HANDLE RngAlgorithm;
+
+#if DEBUG
+    //
+    // 1/Denominator of allocations to fail.
+    // Negative is Nth allocation to fail.
+    //
+    int32_t AllocFailDenominator;
+
+    //
+    // Count of allocations.
+    //
+    long AllocCounter;
+#endif
+
 } CX_PLATFORM;
 
 CX_PLATFORM CxPlatform = { NULL };
@@ -63,6 +77,43 @@ CxPlatUninitialize(
     CxPlatTraceLogInfo(
         "[ sys] Uninitialized");
 }
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+void
+CxPlatLogAssert(
+    _In_z_ const char* File,
+    _In_ int Line,
+    _In_z_ const char* Expr
+    )
+{
+    UNREFERENCED_PARAMETER(File);
+    UNREFERENCED_PARAMETER(Line);
+    UNREFERENCED_PARAMETER(Expr);
+    CxPlatTraceEvent(
+        "[ lib] ASSERT, %u:%s - %s.",
+        (uint32_t)Line,
+        File,
+        Expr);
+}
+
+#if DEBUG
+void
+CxPlatSetAllocFailDenominator(
+    _In_ int32_t Value
+    )
+{
+    CxPlatform.AllocFailDenominator = Value;
+    CxPlatform.AllocCounter = 0;
+}
+
+int32_t
+CxPlatGetAllocFailDenominator(
+    )
+{
+    return CxPlatform.AllocFailDenominator;
+}
+
+#endif
 
 _IRQL_requires_max_(DISPATCH_LEVEL)
 CXPLAT_STATUS
