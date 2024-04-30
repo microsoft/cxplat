@@ -16,18 +16,18 @@ Abstract:
 void CxPlatTestMemoryBasic()
 {
     const char* TestString = "CxPlatTestMemoryBasic";
-    size_t BufferLen = strlen(TestString);
+    const size_t BufferLen = strlen(TestString);
 
     char* Buffer = (char*)CXPLAT_ALLOC_NONPAGED(BufferLen, CXPLAT_POOLTAG_MEMORY_TEST);
     TEST_TRUE_GOTO(Buffer != NULL);
 
     CxPlatZeroMemory(Buffer, BufferLen);
-    for (int i = 0; i < BufferLen; i++) {
+    for (size_t i = 0; i < BufferLen; i++) {
         TEST_EQUAL_GOTO(Buffer[i], '\0');
     }
 
     CxPlatCopyMemory(Buffer, TestString, BufferLen);
-    for (int i = 0; i < BufferLen; i++) {
+    for (size_t i = 0; i < BufferLen; i++) {
         TEST_EQUAL_GOTO(Buffer[i], TestString[i]);
     }
 
@@ -35,7 +35,7 @@ void CxPlatTestMemoryBasic()
     TEST_EQUAL_GOTO(0, memcmp(Buffer, "CxPlatCxPlatTeryBasic", BufferLen));
 
     CxPlatSecureZeroMemory(Buffer, BufferLen);
-    for (int i = 0; i < BufferLen; i++) {
+    for (size_t i = 0; i < BufferLen; i++) {
         TEST_EQUAL_GOTO(Buffer[i], '\0');
     }
 
