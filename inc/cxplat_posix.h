@@ -53,6 +53,24 @@ extern "C" {
 typedef unsigned char BOOLEAN;
 
 inline
+short
+InterlockedIncrement16(
+    _Inout_ _Interlocked_operand_ short volatile *Addend
+    )
+{
+    return __sync_add_and_fetch(Addend, (short)1);
+}
+
+inline
+short
+InterlockedDecrement16(
+    _Inout_ _Interlocked_operand_ short volatile *Addend
+    )
+{
+    return __sync_sub_and_fetch(Addend, (short)1);
+}
+
+inline
 long
 InterlockedIncrement(
     _Inout_ _Interlocked_operand_ long volatile *Addend
@@ -68,6 +86,24 @@ InterlockedDecrement(
     )
 {
     return __sync_sub_and_fetch(Addend, (long)1);
+}
+
+inline
+int64_t
+InterlockedIncrement64(
+    _Inout_ _Interlocked_operand_ int64_t volatile *Addend
+    )
+{
+    return __sync_add_and_fetch(Addend, (int64_t)1);
+}
+
+inline
+int64_t
+InterlockedDecrement64(
+    _Inout_ _Interlocked_operand_ int64_t volatile *Addend
+    )
+{
+    return __sync_sub_and_fetch(Addend, (int64_t)1);
 }
 
 inline
@@ -88,16 +124,6 @@ InterlockedOr(
     )
 {
     return __sync_or_and_fetch(Destination, Value);
-}
-
-inline
-int64_t
-InterlockedExchangeAdd64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Addend,
-    _In_ int64_t Value
-    )
-{
-    return __sync_fetch_and_add(Addend, Value);
 }
 
 inline
@@ -134,21 +160,13 @@ InterlockedCompareExchange64(
 }
 
 inline
-BOOLEAN
-InterlockedFetchAndClearBoolean(
-    _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
+int64_t
+InterlockedExchangeAdd64(
+    _Inout_ _Interlocked_operand_ int64_t volatile *Addend,
+    _In_ int64_t Value
     )
 {
-    return __sync_fetch_and_and(Target, 0);
-}
-
-inline
-BOOLEAN
-InterlockedFetchAndSetBoolean(
-    _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
-    )
-{
-    return __sync_fetch_and_or(Target, 1);
+    return __sync_fetch_and_add(Addend, Value);
 }
 
 inline
@@ -171,39 +189,21 @@ InterlockedFetchAndClearPointer(
 }
 
 inline
-short
-InterlockedIncrement16(
-    _Inout_ _Interlocked_operand_ short volatile *Addend
+BOOLEAN
+InterlockedFetchAndClearBoolean(
+    _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
     )
 {
-    return __sync_add_and_fetch(Addend, (short)1);
+    return __sync_fetch_and_and(Target, 0);
 }
 
 inline
-short
-InterlockedDecrement16(
-    _Inout_ _Interlocked_operand_ short volatile *Addend
+BOOLEAN
+InterlockedFetchAndSetBoolean(
+    _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
     )
 {
-    return __sync_sub_and_fetch(Addend, (short)1);
-}
-
-inline
-int64_t
-InterlockedIncrement64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Addend
-    )
-{
-    return __sync_add_and_fetch(Addend, (int64_t)1);
-}
-
-inline
-int64_t
-InterlockedDecrement64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Addend
-    )
-{
-    return __sync_sub_and_fetch(Addend, (int64_t)1);
+    return __sync_fetch_and_or(Target, 1);
 }
 
 //
