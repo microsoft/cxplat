@@ -139,6 +139,178 @@ CxPlatLogAssert(
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
+// Time Measurement Interfaces
+//
+
+//
+// Returns the worst-case system timer resolution (in us).
+//
+inline
+uint64_t
+CxPlatGetTimerResolution()
+{
+    ULONG MaximumTime, MinimumTime, CurrentTime;
+    ExQueryTimerResolution(&MaximumTime, &MinimumTime, &CurrentTime);
+    return NS100_TO_US(MaximumTime);
+}
+
+//
+// Performance counter frequency.
+//
+extern uint64_t CxPlatPerfFreq;
+
+//
+// Returns the current time in platform specific time units.
+//
+inline
+uint64_t
+CxPlatTimePlat(
+    void
+    )
+{
+    return (uint64_t)KeQueryPerformanceCounter(NULL).QuadPart;
+}
+
+//
+// Converts platform time to microseconds.
+//
+inline
+uint64_t
+CxPlatTimePlatToUs64(
+    uint64_t Count
+    )
+{
+    //
+    // Multiply by a big number (1000000, to convert seconds to microseconds)
+    // and divide by a big number (CxPlatPerfFreq, to convert counts to secs).
+    //
+    // Avoid overflow with separate multiplication/division of the high and low
+    // bits. Taken from TcpConvertPerformanceCounterToMicroseconds.
+    //
+    uint64_t High = (Count >> 32) * 1000000;
+    uint64_t Low = (Count & 0xFFFFFFFF) * 1000000;
+    return
+        ((High / CxPlatPerfFreq) << 32) +
+        ((Low + ((High % CxPlatPerfFreq) << 32)) / CxPlatPerfFreq);
+}
+
+//
+// Converts microseconds to platform time.
+//
+inline
+uint64_t
+CxPlatTimeUs64ToPlat(
+    uint64_t TimeUs
+    )
+{
+    uint64_t High = (TimeUs >> 32) * CxPlatPerfFreq;
+    uint64_t Low = (TimeUs & 0xFFFFFFFF) * CxPlatPerfFreq;
+    return
+        ((High / 1000000) << 32) +
+        ((Low + ((High % 1000000) << 32)) / 1000000);
+}
+
+#define CxPlatTimeUs64() CxPlatTimePlatToUs64(CxPlatTimePlat())
+#define CxPlatTimeUs32() (uint32_t)CxPlatTimeUs64()
+#define CxPlatTimeMs64() US_TO_MS(CxPlatTimeUs64())
+#define CxPlatTimeMs32() (uint32_t)CxPlatTimeMs64()
+
+#define UNIX_EPOCH_AS_FILE_TIME 0x19db1ded53e8000ll
+
+inline
+int64_t
+CxPlatTimeEpochMs64(
+    )
+{
+    LARGE_INTEGER SystemTime;
+    KeQuerySystemTime(&SystemTime);
+    return NS100_TO_MS(SystemTime.QuadPart - UNIX_EPOCH_AS_FILE_TIME);
+}
+
+//
+// Returns the difference between two timestamps.
+//
+inline
+uint64_t
+CxPlatTimeDiff64(
+    _In_ uint64_t T1,     // First time measured
+    _In_ uint64_t T2      // Second time measured
+    )
+{
+    //
+    // Assume no wrap around.
+    //
+    return T2 - T1;
+}
+
+//
+// Returns the difference between two timestamps.
+//
+inline
+uint32_t
+CxPlatTimeDiff32(
+    _In_ uint32_t T1,     // First time measured
+    _In_ uint32_t T2      // Second time measured
+    )
+{
+    if (T2 > T1) {
+        return T2 - T1;
+    } else { // Wrap around case.
+        return T2 + (0xFFFFFFFF - T1) + 1;
+    }
+}
+
+//
+// Returns TRUE if T1 came before T2.
+//
+inline
+BOOLEAN
+CxPlatTimeAtOrBefore64(
+    _In_ uint64_t T1,
+    _In_ uint64_t T2
+    )
+{
+    //
+    // Assume no wrap around.
+    //
+    return T1 <= T2;
+}
+
+//
+// Returns TRUE if T1 came before T2.
+//
+inline
+BOOLEAN
+CxPlatTimeAtOrBefore32(
+    _In_ uint32_t T1,
+    _In_ uint32_t T2
+    )
+{
+    return (int32_t)(T1 - T2) <= 0;
+}
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+inline
+void
+CxPlatSleep(
+    _In_ uint32_t DurationMs
+    )
+{
+    CXPLAT_DBG_ASSERT(DurationMs != (uint32_t)-1);
+
+    KTIMER SleepTimer;
+    LARGE_INTEGER TimerValue;
+
+    KeInitializeTimerEx(&SleepTimer, SynchronizationTimer);
+    TimerValue.QuadPart = Int32x32To64(DurationMs, -10000);
+    KeSetTimer(&SleepTimer, TimerValue, NULL);
+
+    KeWaitForSingleObject(&SleepTimer, Executive, KernelMode, FALSE, NULL);
+}
+
+#define CxPlatSchedulerYield() // no-op
+
+//
 // Crypto Interfaces
 //
 

@@ -296,6 +296,111 @@ CxPlatFree(
 #define CxPlatSecureZeroMemory CxPlatZeroMemory // TODO - Something better?
 
 //
+// Time Measurement Interfaces
+//
+
+#define CXPLAT_NANOSEC_PER_MS       (1000000)
+#define CXPLAT_NANOSEC_PER_MICROSEC (1000)
+#define CXPLAT_NANOSEC_PER_SEC      (1000000000)
+#define CXPLAT_MICROSEC_PER_MS      (1000)
+#define CXPLAT_MICROSEC_PER_SEC     (1000000)
+#define CXPLAT_MS_PER_SECOND        (1000)
+
+uint64_t
+CxPlatGetTimerResolution(
+    void
+    );
+
+void
+CxPlatGetAbsoluteTime(
+    _In_ unsigned long DeltaMs,
+    _Out_ struct timespec *Time
+    );
+
+uint64_t
+CxPlatTimeUs64(
+    void
+    );
+
+#define CxPlatTimeUs32() (uint32_t)CxPlatTimeUs64()
+#define CxPlatTimeMs64()  (CxPlatTimeUs64() / CXPLAT_MICROSEC_PER_MS)
+#define CxPlatTimeMs32() (uint32_t)CxPlatTimeMs64()
+#define CxPlatTimeUs64ToPlat(x) (x)
+
+inline
+int64_t
+CxPlatTimeEpochMs64(
+    void
+    )
+{
+    struct timeval tv;
+    CxPlatZeroMemory(&tv, sizeof(tv));
+    gettimeofday(&tv, NULL);
+    return S_TO_MS(tv.tv_sec) + US_TO_MS(tv.tv_usec);
+}
+
+inline
+uint64_t
+CxPlatTimeDiff64(
+    _In_ uint64_t T1,
+    _In_ uint64_t T2
+    )
+{
+    //
+    // Assume no wrap around.
+    //
+
+    return T2 - T1;
+}
+
+inline
+uint32_t
+CXPLAT_NO_SANITIZE("unsigned-integer-overflow")
+CxPlatTimeDiff32(
+    _In_ uint32_t T1,     // First time measured
+    _In_ uint32_t T2      // Second time measured
+    )
+{
+    if (T2 > T1) {
+        return T2 - T1;
+    } else { // Wrap around case.
+        return T2 + (0xFFFFFFFF - T1) + 1;
+    }
+}
+
+inline
+BOOLEAN
+CxPlatTimeAtOrBefore64(
+    _In_ uint64_t T1,
+    _In_ uint64_t T2
+    )
+{
+    //
+    // Assume no wrap around.
+    //
+
+    return T1 <= T2;
+}
+
+inline
+BOOLEAN
+CXPLAT_NO_SANITIZE("unsigned-integer-overflow")
+CxPlatTimeAtOrBefore32(
+    _In_ uint32_t T1,
+    _In_ uint32_t T2
+    )
+{
+    return (int32_t)(T1 - T2) <= 0;
+}
+
+void
+CxPlatSleep(
+    _In_ uint32_t DurationMs
+    );
+
+#define CxPlatSchedulerYield() sched_yield()
+
+//
 // Crypto Interfaces
 //
 
