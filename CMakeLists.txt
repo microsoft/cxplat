@@ -323,6 +323,9 @@ if(WIN32)
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /IGNORE:4075 /DEBUG /OPT:REF /OPT:ICF")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /IGNORE:4075 /DEBUG /OPT:REF /OPT:ICF")
 
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
     message(STATUS "Configuring for statically-linked CRT")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -333,7 +336,7 @@ else() #!WIN32
         set(MARCH -march=native)
     endif()
 
-    set(CMAKE_C_FLAGS_DEBUG "-Og -fno-omit-frame-pointer")
+    set(CMAKE_C_FLAGS_DEBUG "-Og -fno-omit-frame-pointer -DDEBUG")
     set(CMAKE_C_FLAGS_MINSIZEREL "-Os -DNDEBUG")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -fno-omit-frame-pointer ${MARCH} -DNDEBUG")
     set(CMAKE_C_FLAGS_RELEASE "-O3 ${MARCH} -DNDEBUG")

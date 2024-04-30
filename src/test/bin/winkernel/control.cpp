@@ -359,6 +359,7 @@ size_t CXPLAT_IOCTL_BUFFER_SIZES[] =
 {
     0,
     0,
+    0,
 };
 
 static_assert(
@@ -471,6 +472,10 @@ CxPlatTestCtlEvtIoDeviceControl(
 
     case IOCTL_CXPLAT_RUN_CRYPT_RANDOM:
         CxPlatTestCtlRun(CxPlatTestCryptRandom());
+        break;
+
+    case IOCTL_CXPLAT_RUN_MEMORY_BASIC:
+        CxPlatTestCtlRun(CxPlatTestMemoryBasic());
         break;
 
     default:

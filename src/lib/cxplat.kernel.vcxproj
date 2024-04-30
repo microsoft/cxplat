@@ -88,7 +88,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>

@@ -11,6 +11,27 @@
 #include <sched.h>
 #include <syslog.h>
 
+typedef struct CX_PLATFORM {
+
+    void* Reserved; // Nothing right now.
+
+#if DEBUG
+    //
+    // 1/Denominator of allocations to fail.
+    // Negative is Nth allocation to fail.
+    //
+    int32_t AllocFailDenominator;
+
+    //
+    // Count of allocations.
+    //
+    long AllocCounter;
+#endif
+
+} CX_PLATFORM;
+
+CX_PLATFORM CxPlatform = { NULL };
+
 //
 // Used for reading random numbers.
 //
@@ -73,6 +94,11 @@ CxPlatInitialize(
     void
     )
 {
+#if DEBUG
+    CxPlatform.AllocFailDenominator = 0;
+    CxPlatform.AllocCounter = 0;
+#endif
+
     RandomFd = open("/dev/urandom", O_RDONLY|O_CLOEXEC);
     if (RandomFd == -1) {
         CxPlatTraceEvent(
@@ -96,6 +122,52 @@ CxPlatUninitialize(
     close(RandomFd);
     CxPlatTraceLogInfo(
         "[ dso] Uninitialized");
+}
+
+#if DEBUG
+void
+CxPlatSetAllocFailDenominator(
+    _In_ int32_t Value
+    )
+{
+    CxPlatform.AllocFailDenominator = Value;
+    CxPlatform.AllocCounter = 0;
+}
+
+int32_t
+CxPlatGetAllocFailDenominator(
+    )
+{
+    return CxPlatform.AllocFailDenominator;
+}
+#endif
+
+void*
+CxPlatAlloc(
+    _In_ size_t ByteCount,
+    _In_ uint32_t Tag
+    )
+{
+    UNREFERENCED_PARAMETER(Tag);
+#if DEBUG
+    CXPLAT_DBG_ASSERT(ByteCount != 0);
+    uint32_t Rand;
+    if ((CxPlatform.AllocFailDenominator > 0 && (CxPlatRandom(sizeof(Rand), &Rand), Rand % CxPlatform.AllocFailDenominator) == 1) ||
+        (CxPlatform.AllocFailDenominator < 0 && InterlockedIncrement(&CxPlatform.AllocCounter) % CxPlatform.AllocFailDenominator == 0)) {
+        return NULL;
+    }
+#endif
+    return malloc(ByteCount);
+}
+
+void
+CxPlatFree(
+    __drv_freesMem(Mem) _Frees_ptr_ void* Mem,
+    _In_ uint32_t Tag
+    )
+{
+    UNREFERENCED_PARAMETER(Tag);
+    free(Mem);
 }
 
 CXPLAT_STATUS

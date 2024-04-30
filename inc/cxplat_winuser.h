@@ -32,6 +32,7 @@ extern "C" {
 #define CXPLAT_SUCCEEDED(X)                   SUCCEEDED(X)
 
 #define CXPLAT_STATUS_SUCCESS                 S_OK                              // 0x0
+#define CXPLAT_STATUS_OUT_OF_MEMORY           E_OUTOFMEMORY                     // 0x8007000e
 
 //
 // Code Annotations
@@ -105,6 +106,34 @@ CxPlatLogAssert(
 #define CXPLAT_DBG_ASSERT(_exp)          CXPLAT_ASSERT_NOOP(_exp, CXPLAT_WIDE_STRING(#_exp))
 #define CXPLAT_DBG_ASSERTMSG(_exp, _msg) CXPLAT_ASSERT_NOOP(_exp, CXPLAT_WIDE_STRING(_msg))
 #endif
+
+//
+// Allocation/Memory Interfaces
+//
+
+_Ret_maybenull_
+_Post_writable_byte_size_(ByteCount)
+DECLSPEC_ALLOCATOR
+void*
+CxPlatAlloc(
+    _In_ size_t ByteCount,
+    _In_ uint32_t Tag
+    );
+
+void
+CxPlatFree(
+    __drv_freesMem(Mem) _Frees_ptr_ void* Mem,
+    _In_ uint32_t Tag
+    );
+
+#define CXPLAT_ALLOC_PAGED(Size, Tag) CxPlatAlloc(Size, Tag)
+#define CXPLAT_ALLOC_NONPAGED(Size, Tag) CxPlatAlloc(Size, Tag)
+#define CXPLAT_FREE(Mem, Tag) CxPlatFree((void*)Mem, Tag)
+
+#define CxPlatZeroMemory RtlZeroMemory
+#define CxPlatCopyMemory RtlCopyMemory
+#define CxPlatMoveMemory RtlMoveMemory
+#define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
 // Crypto Interfaces

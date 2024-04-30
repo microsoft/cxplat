@@ -47,6 +47,17 @@ CxPlatUninitialize(
     void
     );
 
+#ifdef DEBUG
+void
+CxPlatSetAllocFailDenominator(
+    _In_ int32_t Value
+    );
+
+int32_t
+CxPlatGetAllocFailDenominator(
+    );
+#endif
+
 #if defined(__cplusplus)
 }
 #endif

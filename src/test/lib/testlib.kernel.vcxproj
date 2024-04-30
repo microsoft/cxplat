@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CryptTest.cpp" />
+    <ClCompile Include="MemoryTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />
@@ -79,7 +80,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>

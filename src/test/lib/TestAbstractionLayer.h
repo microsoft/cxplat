@@ -49,3 +49,43 @@ Abstract:
         return; \
     } \
 }
+
+//
+// goto variants
+//
+
+#define TEST_EQUAL_GOTO(__expected, __condition) { \
+    if (__condition != __expected) { \
+        TEST_FAILURE(#__condition " not equal to " #__expected); \
+        goto Failure; \
+    } \
+}
+
+#define TEST_NOT_EQUAL_GOTO(__expected, __condition) { \
+    if (__condition == __expected) { \
+        TEST_FAILURE(#__condition " equals " #__expected); \
+        goto Failure; \
+    } \
+}
+
+#define TEST_TRUE_GOTO(__condition) { \
+    if (!(__condition)) { \
+        TEST_FAILURE(#__condition " not true"); \
+        goto Failure; \
+    } \
+}
+
+#define TEST_FALSE_GOTO(__condition) { \
+    if (__condition) { \
+        TEST_FAILURE(#__condition " not false"); \
+        goto Failure; \
+    } \
+}
+
+#define TEST_CXPLAT_GOTO(__condition) { \
+    CXPLAT_STATUS __status = __condition; \
+    if (CXPLAT_FAILED(__status)) { \
+        TEST_FAILURE(#__condition " failed, 0x%x", __status); \
+        goto Failure; \
+    } \
+}
