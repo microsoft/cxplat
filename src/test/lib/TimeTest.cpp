@@ -45,4 +45,7 @@ void CxPlatTestTimeBasic()
     TEST_TRUE(CxPlatTimeDiff64(T1Ms64, T2Ms64) < SleepTimeMs + FudgeMs);
     TEST_TRUE(CxPlatTimeDiff32(T1Ms32, T2Ms32) > SleepTimeMs - FudgeMs);
     TEST_TRUE(CxPlatTimeDiff32(T1Ms32, T2Ms32) < SleepTimeMs + FudgeMs);
+
+    TEST_TRUE(CxPlatTimeAtOrBefore32(T1Ms32, T2Ms32));
+    TEST_TRUE(CxPlatTimeAtOrBefore64(T1Ms64, T2Ms64));
 }
