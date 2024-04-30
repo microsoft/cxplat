@@ -50,6 +50,8 @@ extern "C" {
 
 #define UNREFERENCED_PARAMETER(P) (void)(P)
 
+typedef unsigned char BOOLEAN;
+
 inline
 long
 InterlockedIncrement(
