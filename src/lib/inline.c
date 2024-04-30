@@ -106,3 +106,32 @@ BOOLEAN
 InterlockedFetchAndSetBoolean(
     _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
     );
+
+int64_t
+CxPlatTimeEpochMs64(
+    void
+    );
+
+uint64_t
+CxPlatTimeDiff64(
+    _In_ uint64_t T1,
+    _In_ uint64_t T2
+    );
+
+uint32_t
+CxPlatTimeDiff32(
+    _In_ uint32_t T1,
+    _In_ uint32_t T2
+    );
+
+BOOLEAN
+CxPlatTimeAtOrBefore64(
+    _In_ uint64_t T1,
+    _In_ uint64_t T2
+    );
+
+BOOLEAN
+CxPlatTimeAtOrBefore32(
+    _In_ uint32_t T1,
+    _In_ uint32_t T2
+    );

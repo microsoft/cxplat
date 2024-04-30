@@ -1,4 +1,4 @@
-#include "cxplat_winuser.h"
+#include "cxplat.h"
 #include "cxplat_trace.h"
 #include <bcrypt.h>
 
@@ -24,6 +24,7 @@ typedef struct CX_PLATFORM {
 
 } CX_PLATFORM;
 
+uint64_t CxPlatPerfFreq;
 CX_PLATFORM CxPlatform = { NULL };
 
 _IRQL_requires_max_(PASSIVE_LEVEL)
@@ -33,6 +34,8 @@ CxPlatInitialize(
     )
 {
     CXPLAT_STATUS Status;
+
+    (void)QueryPerformanceFrequency((LARGE_INTEGER*)&CxPlatPerfFreq);
 
     CxPlatform.Heap = HeapCreate(0, 0, 0);
     if (CxPlatform.Heap == NULL) {

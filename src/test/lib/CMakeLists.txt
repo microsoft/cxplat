@@ -4,6 +4,7 @@
 set(SOURCES
     CryptTest.cpp
     MemoryTest.cpp
+    TimeTest.cpp
 )
 
 add_library(testlib STATIC ${SOURCES})

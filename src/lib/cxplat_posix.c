@@ -1,4 +1,4 @@
-#include "cxplat_posix.h"
+#include "cxplat.h"
 #include "cxplat_trace.h"
 
 // For FreeBSD
@@ -168,6 +168,91 @@ CxPlatFree(
 {
     UNREFERENCED_PARAMETER(Tag);
     free(Mem);
+}
+
+uint64_t
+CxPlatTimespecToUs(
+    _In_ const struct timespec *Time
+    )
+{
+    return (Time->tv_sec * CXPLAT_MICROSEC_PER_SEC) + (Time->tv_nsec / CXPLAT_NANOSEC_PER_MICROSEC);
+}
+
+uint64_t
+CxPlatGetTimerResolution(
+    void
+    )
+{
+    struct timespec Res = {0};
+    int ErrorCode = clock_getres(CLOCK_MONOTONIC, &Res);
+    CXPLAT_DBG_ASSERT(ErrorCode == 0);
+    UNREFERENCED_PARAMETER(ErrorCode);
+    return CxPlatTimespecToUs(&Res);
+}
+
+uint64_t
+CxPlatTimeUs64(
+    void
+    )
+{
+    struct timespec CurrTime = {0};
+    int ErrorCode = clock_gettime(CLOCK_MONOTONIC, &CurrTime);
+    CXPLAT_DBG_ASSERT(ErrorCode == 0);
+    UNREFERENCED_PARAMETER(ErrorCode);
+    return CxPlatTimespecToUs(&CurrTime);
+}
+
+void
+CxPlatGetAbsoluteTime(
+    _In_ unsigned long DeltaMs,
+    _Out_ struct timespec *Time
+    )
+{
+    int ErrorCode = 0;
+
+    CxPlatZeroMemory(Time, sizeof(struct timespec));
+
+#if defined(CX_PLATFORM_LINUX)
+    ErrorCode = clock_gettime(CLOCK_MONOTONIC, Time);
+#elif defined(CX_PLATFORM_DARWIN)
+    //
+    // timespec_get is used on darwin, as CLOCK_MONOTONIC isn't actually
+    // monotonic according to our tests.
+    //
+    timespec_get(Time, TIME_UTC);
+#endif // CX_PLATFORM_DARWIN
+
+    CXPLAT_DBG_ASSERT(ErrorCode == 0);
+    UNREFERENCED_PARAMETER(ErrorCode);
+
+    Time->tv_sec += (DeltaMs / CXPLAT_MS_PER_SECOND);
+    Time->tv_nsec += ((DeltaMs % CXPLAT_MS_PER_SECOND) * CXPLAT_NANOSEC_PER_MS);
+
+    if (Time->tv_nsec >= CXPLAT_NANOSEC_PER_SEC)
+    {
+        Time->tv_sec += 1;
+        Time->tv_nsec -= CXPLAT_NANOSEC_PER_SEC;
+    }
+
+    CXPLAT_DBG_ASSERT(Time->tv_sec >= 0);
+    CXPLAT_DBG_ASSERT(Time->tv_nsec >= 0);
+    CXPLAT_DBG_ASSERT(Time->tv_nsec < CXPLAT_NANOSEC_PER_SEC);
+}
+
+void
+CxPlatSleep(
+    _In_ uint32_t DurationMs
+    )
+{
+    int ErrorCode = 0;
+    struct timespec TS = {
+        .tv_sec = (DurationMs / CXPLAT_MS_PER_SECOND),
+        .tv_nsec = (CXPLAT_NANOSEC_PER_MS * (DurationMs % CXPLAT_MS_PER_SECOND))
+    };
+
+    ErrorCode = nanosleep(&TS, &TS);
+    CXPLAT_DBG_ASSERT(ErrorCode == 0);
+    UNREFERENCED_PARAMETER(ErrorCode);
 }
 
 CXPLAT_STATUS

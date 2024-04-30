@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="CryptTest.cpp" />
     <ClCompile Include="MemoryTest.cpp" />
+    <ClCompile Include="TimeTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />

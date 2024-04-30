@@ -1,4 +1,4 @@
-#include "cxplat_winkernel.h"
+#include "cxplat.h"
 #include "cxplat_trace.h"
 #include <bcrypt.h>
 
@@ -23,6 +23,7 @@ typedef struct CX_PLATFORM {
 
 } CX_PLATFORM;
 
+uint64_t CxPlatPerfFreq;
 CX_PLATFORM CxPlatform = { NULL };
 
 PAGEDX
@@ -33,6 +34,8 @@ CxPlatInitialize(
     )
 {
     PAGED_CODE();
+
+    (VOID)KeQueryPerformanceCounter((LARGE_INTEGER*)&CxPlatPerfFreq);
 
     CXPLAT_STATUS Status =
         BCryptOpenAlgorithmProvider(
