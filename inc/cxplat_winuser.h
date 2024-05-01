@@ -150,30 +150,6 @@ CxPlatFree(
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
-// Event Interfaces
-//
-
-typedef HANDLE CXPLAT_EVENT;
-
-#define CxPlatEventInitialize(Event, ManualReset, InitialState)     \
-    *(Event) = CreateEvent(NULL, ManualReset, InitialState, NULL);  \
-    CXPLAT_DBG_ASSERT(*Event != NULL)
-#define CxPlatEventUninitialize(Event) CxPlatCloseHandle(Event)
-#define CxPlatEventSet(Event) SetEvent(Event)
-#define CxPlatEventReset(Event) ResetEvent(Event)
-#define CxPlatEventWaitForever(Event) WaitForSingleObject(Event, INFINITE)
-inline
-BOOLEAN
-CxPlatEventWaitWithTimeout(
-    _In_ CXPLAT_EVENT Event,
-    _In_ uint32_t TimeoutMs
-    )
-{
-    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
-    return WAIT_OBJECT_0 == WaitForSingleObject(Event, TimeoutMs);
-}
-
-//
 // Time Measurement Interfaces
 //
 
@@ -342,6 +318,31 @@ CxPlatTimeAtOrBefore32(
 #define CxPlatSleep(ms) Sleep(ms)
 
 #define CxPlatSchedulerYield() Sleep(0)
+
+
+//
+// Event Interfaces
+//
+
+typedef HANDLE CXPLAT_EVENT;
+
+#define CxPlatEventInitialize(Event, ManualReset, InitialState)     \
+    *(Event) = CreateEvent(NULL, ManualReset, InitialState, NULL);  \
+    CXPLAT_DBG_ASSERT(*Event != NULL)
+#define CxPlatEventUninitialize(Event) CxPlatCloseHandle(Event)
+#define CxPlatEventSet(Event) SetEvent(Event)
+#define CxPlatEventReset(Event) ResetEvent(Event)
+#define CxPlatEventWaitForever(Event) WaitForSingleObject(Event, INFINITE)
+inline
+BOOLEAN
+CxPlatEventWaitWithTimeout(
+    _In_ CXPLAT_EVENT Event,
+    _In_ uint32_t TimeoutMs
+    )
+{
+    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
+    return WAIT_OBJECT_0 == WaitForSingleObject(Event, TimeoutMs);
+}
 
 //
 // Crypto Interfaces

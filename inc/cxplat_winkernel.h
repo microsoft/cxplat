@@ -144,35 +144,6 @@ CxPlatLogAssert(
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
-// Event Interfaces
-//
-
-typedef KEVENT CXPLAT_EVENT;
-
-inline
-NTSTATUS
-CxPlatInternalEventWaitWithTimeout(
-    _In_ CXPLAT_EVENT* Event,
-    _In_ uint32_t TimeoutMs
-    )
-{
-    LARGE_INTEGER Timeout100Ns;
-    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
-    Timeout100Ns.QuadPart = -1 * UInt32x32To64(TimeoutMs, 10000);
-    return KeWaitForSingleObject(Event, Executive, KernelMode, FALSE, &Timeout100Ns);
-}
-
-#define CxPlatEventInitialize(Event, ManualReset, InitialState) \
-    KeInitializeEvent(Event, ManualReset ? NotificationEvent : SynchronizationEvent, InitialState)
-#define CxPlatEventUninitialize(Event) UNREFERENCED_PARAMETER(Event)
-#define CxPlatEventSet(Event) KeSetEvent(&(Event), IO_NO_INCREMENT, FALSE)
-#define CxPlatEventReset(Event) KeResetEvent(&(Event))
-#define CxPlatEventWaitForever(Event) \
-    KeWaitForSingleObject(&(Event), Executive, KernelMode, FALSE, NULL)
-#define CxPlatEventWaitWithTimeout(Event, TimeoutMs) \
-    (STATUS_SUCCESS == CxPlatInternalEventWaitWithTimeout(&Event, TimeoutMs))
-
-//
 // Time Measurement Interfaces
 //
 
@@ -343,6 +314,35 @@ CxPlatSleep(
 }
 
 #define CxPlatSchedulerYield() // no-op
+
+//
+// Event Interfaces
+//
+
+typedef KEVENT CXPLAT_EVENT;
+
+inline
+NTSTATUS
+CxPlatInternalEventWaitWithTimeout(
+    _In_ CXPLAT_EVENT* Event,
+    _In_ uint32_t TimeoutMs
+    )
+{
+    LARGE_INTEGER Timeout100Ns;
+    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
+    Timeout100Ns.QuadPart = -1 * UInt32x32To64(TimeoutMs, 10000);
+    return KeWaitForSingleObject(Event, Executive, KernelMode, FALSE, &Timeout100Ns);
+}
+
+#define CxPlatEventInitialize(Event, ManualReset, InitialState) \
+    KeInitializeEvent(Event, ManualReset ? NotificationEvent : SynchronizationEvent, InitialState)
+#define CxPlatEventUninitialize(Event) UNREFERENCED_PARAMETER(Event)
+#define CxPlatEventSet(Event) KeSetEvent(&(Event), IO_NO_INCREMENT, FALSE)
+#define CxPlatEventReset(Event) KeResetEvent(&(Event))
+#define CxPlatEventWaitForever(Event) \
+    KeWaitForSingleObject(&(Event), Executive, KernelMode, FALSE, NULL)
+#define CxPlatEventWaitWithTimeout(Event, TimeoutMs) \
+    (STATUS_SUCCESS == CxPlatInternalEventWaitWithTimeout(&Event, TimeoutMs))
 
 //
 // Crypto Interfaces
