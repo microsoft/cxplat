@@ -32,6 +32,11 @@ typedef UINT16 uint16_t;
 typedef UINT32 uint32_t;
 typedef UINT64 uint64_t;
 
+#define UINT8_MAX   0xffui8
+#define UINT16_MAX  0xffffui16
+#define UINT32_MAX  0xffffffffui32
+#define UINT64_MAX  0xffffffffffffffffui64
+
 //
 // Status Codes
 //
@@ -137,6 +142,35 @@ CxPlatLogAssert(
 #define CxPlatCopyMemory RtlCopyMemory
 #define CxPlatMoveMemory RtlMoveMemory
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
+
+//
+// Event Interfaces
+//
+
+typedef KEVENT CXPLAT_EVENT;
+
+inline
+NTSTATUS
+CxPlatInternalEventWaitWithTimeout(
+    _In_ CXPLAT_EVENT* Event,
+    _In_ uint32_t TimeoutMs
+    )
+{
+    LARGE_INTEGER Timeout100Ns;
+    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
+    Timeout100Ns.QuadPart = -1 * UInt32x32To64(TimeoutMs, 10000);
+    return KeWaitForSingleObject(Event, Executive, KernelMode, FALSE, &Timeout100Ns);
+}
+
+#define CxPlatEventInitialize(Event, ManualReset, InitialState) \
+    KeInitializeEvent(Event, ManualReset ? NotificationEvent : SynchronizationEvent, InitialState)
+#define CxPlatEventUninitialize(Event) UNREFERENCED_PARAMETER(Event)
+#define CxPlatEventSet(Event) KeSetEvent(&(Event), IO_NO_INCREMENT, FALSE)
+#define CxPlatEventReset(Event) KeResetEvent(&(Event))
+#define CxPlatEventWaitForever(Event) \
+    KeWaitForSingleObject(&(Event), Executive, KernelMode, FALSE, NULL)
+#define CxPlatEventWaitWithTimeout(Event, TimeoutMs) \
+    (STATUS_SUCCESS == CxPlatInternalEventWaitWithTimeout(&Event, TimeoutMs))
 
 //
 // Time Measurement Interfaces

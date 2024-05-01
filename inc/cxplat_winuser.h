@@ -108,6 +108,20 @@ CxPlatLogAssert(
 #endif
 
 //
+// Wrapper functions
+//
+
+//
+// CloseHandle has an incorrect SAL annotation, so call through a wrapper.
+//
+_IRQL_requires_max_(PASSIVE_LEVEL)
+inline
+void
+CxPlatCloseHandle(_Pre_notnull_ HANDLE Handle) {
+    CloseHandle(Handle);
+}
+
+//
 // Allocation/Memory Interfaces
 //
 
@@ -134,6 +148,30 @@ CxPlatFree(
 #define CxPlatCopyMemory RtlCopyMemory
 #define CxPlatMoveMemory RtlMoveMemory
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
+
+//
+// Event Interfaces
+//
+
+typedef HANDLE CXPLAT_EVENT;
+
+#define CxPlatEventInitialize(Event, ManualReset, InitialState)     \
+    *(Event) = CreateEvent(NULL, ManualReset, InitialState, NULL);  \
+    CXPLAT_DBG_ASSERT(*Event != NULL)
+#define CxPlatEventUninitialize(Event) CxPlatCloseHandle(Event)
+#define CxPlatEventSet(Event) SetEvent(Event)
+#define CxPlatEventReset(Event) ResetEvent(Event)
+#define CxPlatEventWaitForever(Event) WaitForSingleObject(Event, INFINITE)
+inline
+BOOLEAN
+CxPlatEventWaitWithTimeout(
+    _In_ CXPLAT_EVENT Event,
+    _In_ uint32_t TimeoutMs
+    )
+{
+    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
+    return WAIT_OBJECT_0 == WaitForSingleObject(Event, TimeoutMs);
+}
 
 //
 // Time Measurement Interfaces
