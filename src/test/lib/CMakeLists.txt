@@ -3,6 +3,7 @@
 
 set(SOURCES
     CryptTest.cpp
+    EventTest.cpp
     MemoryTest.cpp
     TimeTest.cpp
 )

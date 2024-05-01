@@ -143,6 +143,15 @@ TEST(TimeSuite, Basic) {
     }
 }
 
+TEST(EventSuite, Basic) {
+    TestLogger Logger("CxPlatTestEventBasic");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_EVENT_BASIC));
+    } else {
+        CxPlatTestEventBasic();
+    }
+}
+
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {
         if (strcmp("--kernel", argv[i]) == 0) {
