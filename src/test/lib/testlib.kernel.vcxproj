@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CryptTest.cpp" />
+    <ClCompile Include="EventTest.cpp" />
     <ClCompile Include="MemoryTest.cpp" />
     <ClCompile Include="TimeTest.cpp" />
   </ItemGroup>
