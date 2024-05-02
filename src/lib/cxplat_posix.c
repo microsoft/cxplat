@@ -121,7 +121,7 @@ CxPlatInitialize(
     if (numa_available() >= 0) {
         CxPlatNumaNodeCount = (uint32_t)numa_num_configured_nodes();
         CxPlatNumaNodeMasks =
-            CXPLAT_ALLOC_NONPAGED(sizeof(cpu_set_t) * CxPlatNumaNodeCount, CXPLAT_POOL_PLATFORM_PROC);
+            CXPLAT_ALLOC_NONPAGED(sizeof(cpu_set_t) * CxPlatNumaNodeCount, CXPLAT_POOL_PROC);
         CXPLAT_FRE_ASSERT(CxPlatNumaNodeMasks);
         for (uint32_t n = 0; n < CxPlatNumaNodeCount; ++n) {
             CPU_ZERO(&CxPlatNumaNodeMasks[n]);
@@ -155,7 +155,7 @@ CxPlatUninitialize(
     close(RandomFd);
 
 #ifdef CXPLAT_NUMA_AWARE
-    CXPLAT_FREE(CxPlatNumaNodeMasks, CXPLAT_POOL_PLATFORM_PROC);
+    CXPLAT_FREE(CxPlatNumaNodeMasks, CXPLAT_POOL_PROC);
 #endif
 
     CxPlatTraceLogInfo(
