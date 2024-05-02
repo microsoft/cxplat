@@ -50,6 +50,12 @@ void CxPlatTestEventBasic();
 void CxPlatTestProcBasic();
 
 //
+// Thread Tests
+//
+
+void CxPlatTestThreadBasic();
+
+//
 // Platform Specific Functions
 //
 
@@ -118,4 +124,7 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 #define IOCTL_CXPLAT_RUN_PROC_BASIC \
     CXPLAT_CTL_CODE(5, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-#define CXPLAT_MAX_IOCTL_FUNC_CODE 5
+#define IOCTL_CXPLAT_RUN_THREAD_BASIC \
+    CXPLAT_CTL_CODE(6, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+#define CXPLAT_MAX_IOCTL_FUNC_CODE 6

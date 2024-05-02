@@ -23,6 +23,7 @@
     <ClCompile Include="EventTest.cpp" />
     <ClCompile Include="MemoryTest.cpp" />
     <ClCompile Include="ProcTest.cpp" />
+    <ClCompile Include="ThreadTest.cpp" />
     <ClCompile Include="TimeTest.cpp" />
   </ItemGroup>
   <ItemGroup>
