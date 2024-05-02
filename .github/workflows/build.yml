@@ -113,3 +113,10 @@ jobs:
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
+
+  Complete:
+    name: Complete
+    needs: [build-windows, build-windows-kernel, build-ubuntu-cross-compile, build-ubuntu, build-darwin]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "CI succeeded"
