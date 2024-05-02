@@ -24,6 +24,7 @@ typedef struct CX_PLATFORM {
 } CX_PLATFORM;
 
 uint64_t CxPlatPerfFreq;
+uint32_t CxPlatProcessorCount;
 CX_PLATFORM CxPlatform = { NULL };
 
 PAGEDX
@@ -34,6 +35,9 @@ CxPlatInitialize(
     )
 {
     PAGED_CODE();
+
+    CxPlatProcessorCount =
+        (uint32_t)KeQueryActiveProcessorCountEx(ALL_PROCESSOR_GROUPS);
 
     (VOID)KeQueryPerformanceCounter((LARGE_INTEGER*)&CxPlatPerfFreq);
 

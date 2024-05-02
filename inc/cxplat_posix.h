@@ -221,6 +221,7 @@ InterlockedFetchAndSetBoolean(
 
 #define CXPLAT_STATUS_SUCCESS                 ((CXPLAT_STATUS)0)                // 0
 #define CXPLAT_STATUS_OUT_OF_MEMORY           ((CXPLAT_STATUS)ENOMEM)           // 12
+#define CXPLAT_STATUS_NOT_SUPPORTED           ((CXPLAT_STATUS)EOPNOTSUPP)       // 95   (102 on macOS)
 
 //
 // Code Annotations
@@ -597,6 +598,18 @@ Exit:
 #define CxPlatEventReset(Event) CxPlatInternalEventReset(&Event)
 #define CxPlatEventWaitForever(Event) CxPlatInternalEventWaitForever(&Event)
 #define CxPlatEventWaitWithTimeout(Event, TimeoutMs) CxPlatInternalEventWaitWithTimeout(&Event, TimeoutMs)
+
+//
+// Processor Interfaces
+//
+
+extern uint32_t CxPlatProcessorCount;
+#define CxPlatProcCount() CxPlatProcessorCount
+
+uint32_t
+CxPlatProcCurrentNumber(
+    void
+    );
 
 //
 // Crypto Interfaces
