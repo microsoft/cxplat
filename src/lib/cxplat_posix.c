@@ -37,6 +37,8 @@ CX_PLATFORM CxPlatform = { NULL };
 //
 int RandomFd = -1;
 
+uint32_t CxPlatProcessorCount;
+
 #ifdef __clang__
 __attribute__((noinline, noreturn, optnone))
 #else
@@ -97,6 +99,16 @@ CxPlatInitialize(
 #if DEBUG
     CxPlatform.AllocFailDenominator = 0;
     CxPlatform.AllocCounter = 0;
+#endif
+
+#if defined(CX_PLATFORM_DARWIN)
+    //
+    // arm64 macOS has no way to get the current proc, so treat as single core.
+    // Intel macOS can return incorrect values for CPUID, so treat as single core.
+    //
+    CxPlatProcessorCount = 1;
+#else
+    CxPlatProcessorCount = (uint32_t)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 
     RandomFd = open("/dev/urandom", O_RDONLY|O_CLOEXEC);
@@ -253,6 +265,22 @@ CxPlatSleep(
     ErrorCode = nanosleep(&TS, &TS);
     CXPLAT_DBG_ASSERT(ErrorCode == 0);
     UNREFERENCED_PARAMETER(ErrorCode);
+}
+
+uint32_t
+CxPlatProcCurrentNumber(
+    void
+    )
+{
+#if defined(CX_PLATFORM_LINUX)
+    return (uint32_t)sched_getcpu() % CxPlatProcessorCount;
+#elif defined(CX_PLATFORM_DARWIN)
+    //
+    // arm64 macOS has no way to get the current proc, so treat as single core.
+    // Intel macOS can return incorrect values for CPUID, so treat as single core.
+    //
+    return 0;
+#endif // CX_PLATFORM_DARWIN
 }
 
 CXPLAT_STATUS

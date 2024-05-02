@@ -47,6 +47,7 @@ typedef UINT64 uint64_t;
 
 #define CXPLAT_STATUS_SUCCESS                 STATUS_SUCCESS                    // 0x0
 #define CXPLAT_STATUS_OUT_OF_MEMORY           STATUS_NO_MEMORY                  // 0xc0000017
+#define CXPLAT_STATUS_NOT_SUPPORTED           STATUS_NOT_SUPPORTED              // 0xc00000bb
 
 //
 // Code Annotations
@@ -343,6 +344,14 @@ CxPlatInternalEventWaitWithTimeout(
     KeWaitForSingleObject(&(Event), Executive, KernelMode, FALSE, NULL)
 #define CxPlatEventWaitWithTimeout(Event, TimeoutMs) \
     (STATUS_SUCCESS == CxPlatInternalEventWaitWithTimeout(&Event, TimeoutMs))
+
+//
+// Processor Interfaces
+//
+
+extern uint32_t CxPlatProcessorCount;
+#define CxPlatProcCount() CxPlatProcessorCount
+#define CxPlatProcCurrentNumber() (KeGetCurrentProcessorIndex() % CxPlatProcessorCount)
 
 //
 // Crypto Interfaces

@@ -33,6 +33,7 @@ extern "C" {
 
 #define CXPLAT_STATUS_SUCCESS                 S_OK                              // 0x0
 #define CXPLAT_STATUS_OUT_OF_MEMORY           E_OUTOFMEMORY                     // 0x8007000e
+#define CXPLAT_STATUS_NOT_SUPPORTED           E_NOINTERFACE                     // 0x80004002
 
 //
 // Code Annotations
@@ -342,6 +343,39 @@ CxPlatEventWaitWithTimeout(
 {
     CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
     return WAIT_OBJECT_0 == WaitForSingleObject(Event, TimeoutMs);
+}
+
+//
+// Processor Interfaces
+//
+
+typedef struct CXPLAT_PROCESSOR_INFO {
+    uint32_t Index;  // Index in the current group
+    uint16_t Group;  // The group number this processor is a part of
+} CXPLAT_PROCESSOR_INFO;
+
+typedef struct CXPLAT_PROCESSOR_GROUP_INFO {
+    KAFFINITY Mask;  // Bit mask of active processors in the group
+    uint32_t Count;  // Count of active processors in the group
+    uint32_t Offset; // Base process index offset this group starts at
+} CXPLAT_PROCESSOR_GROUP_INFO;
+
+extern CXPLAT_PROCESSOR_INFO* CxPlatProcessorInfo;
+extern CXPLAT_PROCESSOR_GROUP_INFO* CxPlatProcessorGroupInfo;
+
+extern uint32_t CxPlatProcessorCount;
+#define CxPlatProcCount() CxPlatProcessorCount
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+inline
+uint32_t
+CxPlatProcCurrentNumber(
+    void
+    ) {
+    PROCESSOR_NUMBER ProcNumber;
+    GetCurrentProcessorNumberEx(&ProcNumber);
+    const CXPLAT_PROCESSOR_GROUP_INFO* Group = &CxPlatProcessorGroupInfo[ProcNumber.Group];
+    return Group->Offset + (ProcNumber.Number % Group->Count);
 }
 
 //
