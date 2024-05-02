@@ -19,25 +19,6 @@ extern "C" {
 #endif
 
 //
-// Defines that are present on other platforms but not this one
-//
-
-typedef INT8 int8_t;
-typedef INT16 int16_t;
-typedef INT32 int32_t;
-typedef INT64 int64_t;
-
-typedef UINT8 uint8_t;
-typedef UINT16 uint16_t;
-typedef UINT32 uint32_t;
-typedef UINT64 uint64_t;
-
-#define UINT8_MAX   0xffui8
-#define UINT16_MAX  0xffffui16
-#define UINT32_MAX  0xffffffffui32
-#define UINT64_MAX  0xffffffffffffffffui64
-
-//
 // Status Codes
 //
 
@@ -352,6 +333,202 @@ CxPlatInternalEventWaitWithTimeout(
 extern uint32_t CxPlatProcessorCount;
 #define CxPlatProcCount() CxPlatProcessorCount
 #define CxPlatProcCurrentNumber() (KeGetCurrentProcessorIndex() % CxPlatProcessorCount)
+
+//
+// Create Thread Interfaces
+//
+
+typedef enum _THREADINFOCLASS THREADINFOCLASS;
+
+#define ThreadGroupInformation ((THREADINFOCLASS)30)
+#define ThreadIdealProcessorEx ((THREADINFOCLASS)33)
+
+_IRQL_requires_max_(PASSIVE_LEVEL)
+NTSYSAPI
+NTSTATUS
+NTAPI
+ZwSetInformationThread (
+    _In_ HANDLE ThreadHandle,
+    _In_ THREADINFOCLASS ThreadInformationClass,
+    _In_reads_bytes_(ThreadInformationLength) PVOID ThreadInformation,
+    _In_ ULONG ThreadInformationLength
+    );
+
+_IRQL_requires_min_(PASSIVE_LEVEL)
+_IRQL_requires_max_(DISPATCH_LEVEL)
+NTKERNELAPI
+LONG
+KeSetBasePriorityThread (
+    _Inout_ PKTHREAD Thread,
+    _In_ LONG Increment
+    );
+
+_IRQL_requires_max_(DISPATCH_LEVEL)
+NTKERNELAPI
+HANDLE
+PsGetCurrentThreadId(
+    VOID
+    );
+
+typedef struct CXPLAT_THREAD_CONFIG {
+    uint16_t Flags;
+    uint16_t IdealProcessor;
+    _Field_z_ const char* Name;
+    KSTART_ROUTINE* Callback;
+    void* Context;
+} CXPLAT_THREAD_CONFIG;
+
+typedef struct _ETHREAD *CXPLAT_THREAD;
+#define CXPLAT_THREAD_CALLBACK(FuncName, CtxVarName)  \
+    _Function_class_(KSTART_ROUTINE)                \
+    _IRQL_requires_same_                            \
+    void                                            \
+    FuncName(                                       \
+      _In_ void* CtxVarName                         \
+      )
+
+#define CXPLAT_THREAD_RETURN(Status) PsTerminateSystemThread(Status)
+
+inline
+CXPLAT_STATUS
+CxPlatThreadCreate(
+    _In_ CXPLAT_THREAD_CONFIG* Config,
+    _Out_ CXPLAT_THREAD* Thread
+    )
+{
+    CXPLAT_STATUS Status;
+    HANDLE ThreadHandle;
+    Status =
+        PsCreateSystemThread(
+            &ThreadHandle,
+            THREAD_ALL_ACCESS,
+            NULL,
+            NULL,
+            NULL,
+            Config->Callback,
+            Config->Context);
+    CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+    if (CXPLAT_FAILED(Status)) {
+        *Thread = NULL;
+        goto Error;
+    }
+    Status =
+        ObReferenceObjectByHandle(
+            ThreadHandle,
+            THREAD_ALL_ACCESS,
+            *PsThreadType,
+            KernelMode,
+            (void**)Thread,
+            NULL);
+    CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+    if (CXPLAT_FAILED(Status)) {
+        *Thread = NULL;
+        goto Cleanup;
+    }
+    PROCESSOR_NUMBER Processor, IdealProcessor;
+    Status =
+        KeGetProcessorNumberFromIndex(
+            Config->IdealProcessor,
+            &Processor);
+    if (CXPLAT_FAILED(Status)) {
+        Status = CXPLAT_STATUS_SUCCESS; // Currently we don't treat this as fatal
+        goto SetPriority;             // TODO: Improve this logic.
+    }
+    IdealProcessor = Processor;
+    if (Config->Flags & CXPLAT_THREAD_FLAG_SET_AFFINITIZE) {
+        GROUP_AFFINITY Affinity;
+        CxPlatZeroMemory(&Affinity, sizeof(Affinity));
+        Affinity.Group = Processor.Group;
+        Affinity.Mask = (1ull << Processor.Number);
+        Status =
+            ZwSetInformationThread(
+                ThreadHandle,
+                ThreadGroupInformation,
+                &Affinity,
+                sizeof(Affinity));
+        CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+        if (CXPLAT_FAILED(Status)) {
+            goto Cleanup;
+        }
+    } else { // NUMA Node Affinity
+        SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX Info;
+        ULONG InfoLength = sizeof(Info);
+        Status =
+            KeQueryLogicalProcessorRelationship(
+                &Processor,
+                RelationNumaNode,
+                &Info,
+                &InfoLength);
+        CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+        if (CXPLAT_FAILED(Status)) {
+            goto Cleanup;
+        }
+        Status =
+            ZwSetInformationThread(
+                ThreadHandle,
+                ThreadGroupInformation,
+                &Info.NumaNode.GroupMask,
+                sizeof(GROUP_AFFINITY));
+        CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+        if (CXPLAT_FAILED(Status)) {
+            goto Cleanup;
+        }
+    }
+    if (Config->Flags & CXPLAT_THREAD_FLAG_SET_IDEAL_PROC) {
+        Status =
+            ZwSetInformationThread(
+                ThreadHandle,
+                ThreadIdealProcessorEx,
+                &IdealProcessor, // Don't pass in Processor because this overwrites on output.
+                sizeof(IdealProcessor));
+        CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+        if (CXPLAT_FAILED(Status)) {
+            goto Cleanup;
+        }
+    }
+SetPriority:
+    if (Config->Flags & CXPLAT_THREAD_FLAG_HIGH_PRIORITY) {
+        KeSetBasePriorityThread(
+            (PKTHREAD)(*Thread),
+            IO_NETWORK_INCREMENT + 1);
+    }
+    if (Config->Name) {
+        DECLARE_UNICODE_STRING_SIZE(UnicodeName, 64);
+        ULONG UnicodeNameLength = 0;
+        Status =
+            RtlUTF8ToUnicodeN(
+                UnicodeName.Buffer,
+                UnicodeName.MaximumLength,
+                &UnicodeNameLength,
+                Config->Name,
+                (ULONG)strnlen(Config->Name, 64));
+        CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+        UnicodeName.Length = (USHORT)UnicodeNameLength;
+#define ThreadNameInformation ((THREADINFOCLASS)38)
+        Status =
+            ZwSetInformationThread(
+                ThreadHandle,
+                ThreadNameInformation,
+                &UnicodeName,
+                sizeof(UNICODE_STRING));
+        CXPLAT_DBG_ASSERT(CXPLAT_SUCCEEDED(Status));
+        Status = CXPLAT_STATUS_SUCCESS;
+    }
+Cleanup:
+    ZwClose(ThreadHandle);
+Error:
+    return Status;
+}
+#define CxPlatThreadDelete(Thread) ObDereferenceObject(*(Thread))
+#define CxPlatThreadWait(Thread) \
+    KeWaitForSingleObject( \
+        *(Thread), \
+        Executive, \
+        KernelMode, \
+        FALSE, \
+        NULL)
+typedef ULONG_PTR CXPLAT_THREAD_ID;
+#define CxPlatCurThreadID() ((CXPLAT_THREAD_ID)PsGetCurrentThreadId())
 
 //
 // Crypto Interfaces

@@ -6,6 +6,7 @@ set(SOURCES
     EventTest.cpp
     MemoryTest.cpp
     ProcTest.cpp
+    ThreadTest.cpp
     TimeTest.cpp
 )
 

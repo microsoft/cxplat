@@ -9,6 +9,14 @@ Abstract:
 
 --*/
 
+#ifdef CX_PLATFORM_WINKERNEL
+#include "cxplat_winkernel_shim.h"
+#elif CX_PLATFORM_LINUX
+#include "cxplat_posix_shim.h"
+#elif CX_PLATFORM_DARWIN
+#include "cxplat_posix_shim.h"
+#endif
+
 //
 // Time unit conversion.
 //
@@ -25,6 +33,27 @@ Abstract:
 #define S_TO_NS(x)      ((x) * 1000 * 1000 * 1000)
 #define MS_TO_S(x)      ((x) / 1000)
 #define S_TO_MS(x)      ((x) * 1000)
+
+//
+// Pool tags.
+//
+#define CXPLAT_POOL_PROC          '10xC' // Cx01
+#define CXPLAT_POOL_TMP_ALLOC     '20xC' // Cx02
+#define CXPLAT_POOL_CUSTOM_THREAD '30xC' // Cx03
+
+//
+// Thread create flags.
+//
+typedef enum CXPLAT_THREAD_FLAGS {
+    CXPLAT_THREAD_FLAG_NONE               = 0x0000,
+    CXPLAT_THREAD_FLAG_SET_IDEAL_PROC     = 0x0001,
+    CXPLAT_THREAD_FLAG_SET_AFFINITIZE     = 0x0002,
+    CXPLAT_THREAD_FLAG_HIGH_PRIORITY      = 0x0004
+} CXPLAT_THREAD_FLAGS;
+
+#ifdef DEFINE_ENUM_FLAG_OPERATORS
+DEFINE_ENUM_FLAG_OPERATORS(CXPLAT_THREAD_FLAGS);
+#endif
 
 #ifdef CX_PLATFORM_WINKERNEL
 #include "cxplat_winkernel.h"
