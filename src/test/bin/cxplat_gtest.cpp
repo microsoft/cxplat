@@ -152,6 +152,15 @@ TEST(EventSuite, Basic) {
     }
 }
 
+TEST(ProcSuite, Basic) {
+    TestLogger Logger("CxPlatTestProcBasic");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_PROC_BASIC));
+    } else {
+        CxPlatTestProcBasic();
+    }
+}
+
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {
         if (strcmp("--kernel", argv[i]) == 0) {
