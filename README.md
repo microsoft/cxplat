@@ -1,7 +1,7 @@
 # CxPlat
 
 CxPlat stands for 'cross platform', and is meant to be a platform abstraction library for many OS layer components.
-One major distinction of this library, compared to the many others out there is the support for Windows kernel mode, in addition to the various user mode platforms.
+One major distinction of this library, compared to the many others out there, is the support for Windows kernel mode, in addition to the various user mode platforms.
 The code here was originally part of [MsQuic](https://github.com/microsoft/msquic), but refactored into a stand alone library for general usage.
 
 This library is (or will be) used by various Microsoft cross-platform components, but is also free to use by anthing else.
