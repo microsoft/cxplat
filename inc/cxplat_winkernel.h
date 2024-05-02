@@ -363,6 +363,13 @@ KeSetBasePriorityThread (
     _In_ LONG Increment
     );
 
+_IRQL_requires_max_(DISPATCH_LEVEL)
+NTKERNELAPI
+HANDLE
+PsGetCurrentThreadId(
+    VOID
+    );
+
 typedef struct CXPLAT_THREAD_CONFIG {
     uint16_t Flags;
     uint16_t IdealProcessor;
