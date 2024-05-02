@@ -77,13 +77,13 @@ jobs:
       fail-fast: false
       matrix:
         vec: [
-          { config: "Debug", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
-          { config: "Release", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
-          { config: "Debug", plat: "linux", os: "ubuntu-22.04", arch: "x64" },
-          { config: "Release", plat: "linux", os: "ubuntu-22.04", arch: "x64" },
-          { config: "Debug", plat: "windows", os: "windows-2019", arch: "x64" },
+          { config: "Debug",   plat: "linux",   os: "ubuntu-20.04", arch: "x64" },
+          { config: "Release", plat: "linux",   os: "ubuntu-20.04", arch: "x64" },
+          { config: "Debug",   plat: "linux",   os: "ubuntu-22.04", arch: "x64" },
+          { config: "Release", plat: "linux",   os: "ubuntu-22.04", arch: "x64" },
+          { config: "Debug",   plat: "windows", os: "windows-2019", arch: "x64" },
           { config: "Release", plat: "windows", os: "windows-2019", arch: "x64" },
-          { config: "Debug", plat: "windows", os: "windows-2022", arch: "x64" },
+          { config: "Debug",   plat: "windows", os: "windows-2022", arch: "x64" },
           { config: "Release", plat: "windows", os: "windows-2022", arch: "x64" }
         ]
     runs-on: ${{ matrix.vec.os }}
@@ -104,8 +104,7 @@ jobs:
         path: artifacts
     - name: Fix permissions for Unix
       if: matrix.vec.plat == 'linux' || matrix.vec.plat == 'macos'
-      run: |
-        sudo chmod -R 777 artifacts
+      run: sudo chmod -R 777 artifacts
     - name: Prepare Machine
       run: scripts/prepare-machine.ps1 -ForTest
       shell: pwsh
@@ -133,7 +132,7 @@ jobs:
       fail-fast: false
       matrix:
         vec: [
-          { config: "Debug", plat: "winkernel", os: "windows-2022", arch: "x64" },
+          { config: "Debug",   plat: "winkernel", os: "windows-2022", arch: "x64" },
           { config: "Release", plat: "winkernel", os: "windows-2022", arch: "x64" }
         ]
     runs-on: ${{ matrix.vec.os }}
@@ -163,3 +162,10 @@ jobs:
       with:
         name: BVT-Kernel-${{ matrix.vec.config }}-${{ matrix.vec.plat }}-${{ matrix.vec.os }}-${{ matrix.vec.arch }}
         path: artifacts
+
+  Complete:
+    name: Complete
+    needs: [bvt, bvt-kernel]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "CI succeeded"
