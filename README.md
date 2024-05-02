@@ -1,14 +1,11 @@
-# Project
+# CxPlat
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+CxPlat stands for 'cross platform', and is meant to be a platform abstraction library for many OS layer components.
+One major distinction of this library, compared to the many others out there, is the support for Windows kernel mode, in addition to the various user mode platforms.
+The code here was originally part of [MsQuic](https://github.com/microsoft/msquic), but refactored into a stand alone library for general usage.
 
-As the maintainer of this project, please make a few updates:
-
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+This library is (or will be) used by various Microsoft cross-platform components, but is also free to use by anthing else.
+Though, currently, no 'official' support is committed to for this library outside our internal usage.
 
 ## Contributing
 
