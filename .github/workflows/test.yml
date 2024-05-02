@@ -52,8 +52,8 @@ jobs:
       os: ${{ matrix.vec.os }}
       arch: ${{ matrix.vec.arch }}
 
-  build-unix:
-    name: Build Unix
+  build-ubuntu:
+    name: Build Ubuntu
     strategy:
       fail-fast: false
       matrix:
@@ -70,9 +70,25 @@ jobs:
       os: ${{ matrix.vec.os }}
       arch: ${{ matrix.vec.arch }}
 
+  build-macos:
+    name: Build MacOs
+    strategy:
+      fail-fast: false
+      matrix:
+        vec: [
+          { config: "Debug", plat: "macos", os: "macos-12", arch: "x64" },
+          { config: "Release", plat: "macos", os: "macos-12", arch: "x64" }
+        ]
+    uses: ./.github/workflows/build-reuse-unix.yml
+    with:
+      config: ${{ matrix.vec.config }}
+      plat: ${{ matrix.vec.plat }}
+      os: ${{ matrix.vec.os }}
+      arch: ${{ matrix.vec.arch }}
+
   bvt:
     name: BVT
-    needs: [build-windows, build-unix]
+    needs: [build-windows, build-ubuntu, build-macos]
     strategy:
       fail-fast: false
       matrix:
@@ -84,7 +100,9 @@ jobs:
           { config: "Debug",   plat: "windows", os: "windows-2019", arch: "x64" },
           { config: "Release", plat: "windows", os: "windows-2019", arch: "x64" },
           { config: "Debug",   plat: "windows", os: "windows-2022", arch: "x64" },
-          { config: "Release", plat: "windows", os: "windows-2022", arch: "x64" }
+          { config: "Release", plat: "windows", os: "windows-2022", arch: "x64" },
+          { config: "Debug",   plat: "macos", os: "macos-12", arch: "x64" },
+          { config: "Release", plat: "macos", os: "macos-12", arch: "x64" }
         ]
     runs-on: ${{ matrix.vec.os }}
     steps:
@@ -98,7 +116,7 @@ jobs:
         path: artifacts
     - name: Download Build Artifacts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
-      if: matrix.vec.plat == 'linux'
+      if: matrix.vec.plat == 'linux' || matrix.vec.plat == 'macos'
       with:
         name: ${{ matrix.vec.config }}-${{ matrix.vec.plat }}-${{ matrix.vec.os }}-${{ matrix.vec.arch }}-
         path: artifacts
