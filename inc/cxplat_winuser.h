@@ -18,6 +18,8 @@ Abstract:
 
 #include <windows.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <winternl.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -377,6 +379,168 @@ CxPlatProcCurrentNumber(
     const CXPLAT_PROCESSOR_GROUP_INFO* Group = &CxPlatProcessorGroupInfo[ProcNumber.Group];
     return Group->Offset + (ProcNumber.Number % Group->Count);
 }
+
+//
+// Thread Interfaces
+//
+
+//
+// This is the undocumented interface for setting a thread's name. This is
+// essentially what SetThreadDescription does, but that is not available in
+// older versions of Windows. These API's are suffixed _PRIVATE in order
+// to not colide with the built in windows definitions, which are not gated
+// behind any preprocessor macros
+//
+#if !defined(CXPLAT_RESTRICTED_BUILD)
+#define ThreadNameInformationPrivate ((THREADINFOCLASS)38)
+
+typedef struct _THREAD_NAME_INFORMATION_PRIVATE {
+    UNICODE_STRING ThreadName;
+} THREAD_NAME_INFORMATION_PRIVATE, *PTHREAD_NAME_INFORMATION_PRIVATE;
+
+__kernel_entry
+NTSTATUS
+NTAPI
+NtSetInformationThread(
+    _In_ HANDLE ThreadHandle,
+    _In_ THREADINFOCLASS ThreadInformationClass,
+    _In_reads_bytes_(ThreadInformationLength) PVOID ThreadInformation,
+    _In_ ULONG ThreadInformationLength
+    );
+#endif
+
+#ifdef CXPLAT_UWP_BUILD
+WINBASEAPI
+BOOL
+WINAPI
+SetThreadGroupAffinity(
+    _In_ HANDLE hThread,
+    _In_ CONST GROUP_AFFINITY* GroupAffinity,
+    _Out_opt_ PGROUP_AFFINITY PreviousGroupAffinity
+    );
+#endif
+
+typedef struct CXPLAT_THREAD_CONFIG {
+    uint16_t Flags;
+    uint16_t IdealProcessor;
+    _Field_z_ const char* Name;
+    LPTHREAD_START_ROUTINE Callback;
+    void* Context;
+} CXPLAT_THREAD_CONFIG;
+
+typedef HANDLE CXPLAT_THREAD;
+#define CXPLAT_THREAD_CALLBACK(FuncName, CtxVarName)  \
+    DWORD                                           \
+    WINAPI                                          \
+    FuncName(                                       \
+      _In_ void* CtxVarName                         \
+      )
+
+#define CXPLAT_THREAD_RETURN(Status) return (DWORD)(Status)
+
+#ifdef CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+//
+// Extension point that allows additional platform specific logic to be executed
+// for every thread created. The platform must define CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+// and implement the CxPlatThreadCustomStart function. CxPlatThreadCustomStart MUST
+// call the Callback passed in. CxPlatThreadCustomStart MUST also free
+// CustomContext (via CXPLAT_FREE(CustomContext, CXPLAT_POOL_CUSTOM_THREAD)) before
+// returning.
+//
+
+typedef struct CXPLAT_THREAD_CUSTOM_CONTEXT {
+    LPTHREAD_START_ROUTINE Callback;
+    void* Context;
+} CXPLAT_THREAD_CUSTOM_CONTEXT;
+
+CXPLAT_THREAD_CALLBACK(CxPlatThreadCustomStart, CustomContext); // CXPLAT_THREAD_CUSTOM_CONTEXT* CustomContext
+
+#endif // CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+inline
+CXPLAT_STATUS
+CxPlatThreadCreate(
+    _In_ CXPLAT_THREAD_CONFIG* Config,
+    _Out_ CXPLAT_THREAD* Thread
+    )
+{
+#ifdef CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+    CXPLAT_THREAD_CUSTOM_CONTEXT* CustomContext =
+        CXPLAT_ALLOC_NONPAGED(sizeof(CXPLAT_THREAD_CUSTOM_CONTEXT), CXPLAT_POOL_CUSTOM_THREAD);
+    if (CustomContext == NULL) {
+        return CXPLAT_STATUS_OUT_OF_MEMORY;
+    }
+    CustomContext->Callback = Config->Callback;
+    CustomContext->Context = Config->Context;
+    *Thread =
+        CreateThread(
+            NULL,
+            0,
+            CxPlatThreadCustomStart,
+            CustomContext,
+            0,
+            NULL);
+    if (*Thread == NULL) {
+        CXPLAT_FREE(CustomContext, CXPLAT_POOL_CUSTOM_THREAD);
+        return GetLastError();
+    }
+#else // CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+    *Thread =
+        CreateThread(
+            NULL,
+            0,
+            Config->Callback,
+            Config->Context,
+            0,
+            NULL);
+    if (*Thread == NULL) {
+        return GetLastError();
+    }
+#endif // CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+    CXPLAT_DBG_ASSERT(Config->IdealProcessor < CxPlatProcCount());
+    const CXPLAT_PROCESSOR_INFO* ProcInfo = &CxPlatProcessorInfo[Config->IdealProcessor];
+    GROUP_AFFINITY Group = {0};
+    if (Config->Flags & CXPLAT_THREAD_FLAG_SET_AFFINITIZE) {
+        Group.Mask = (KAFFINITY)(1ull << ProcInfo->Index);          // Fixed processor
+    } else {
+        Group.Mask = CxPlatProcessorGroupInfo[ProcInfo->Group].Mask;
+    }
+    Group.Group = ProcInfo->Group;
+    SetThreadGroupAffinity(*Thread, &Group, NULL);
+    if (Config->Flags & CXPLAT_THREAD_FLAG_SET_IDEAL_PROC) {
+        SetThreadIdealProcessor(*Thread, ProcInfo->Index);
+    }
+    if (Config->Flags & CXPLAT_THREAD_FLAG_HIGH_PRIORITY) {
+        SetThreadPriority(*Thread, THREAD_PRIORITY_HIGHEST);
+    }
+    if (Config->Name) {
+        WCHAR WideName[64] = L"";
+        size_t WideNameLength;
+        mbstowcs_s(
+            &WideNameLength,
+            WideName,
+            ARRAYSIZE(WideName) - 1,
+            Config->Name,
+            _TRUNCATE);
+#if defined(CXPLAT_RESTRICTED_BUILD)
+        SetThreadDescription(*Thread, WideName);
+#else
+        THREAD_NAME_INFORMATION_PRIVATE ThreadNameInfo;
+        RtlInitUnicodeString(&ThreadNameInfo.ThreadName, WideName);
+        NtSetInformationThread(
+            *Thread,
+            ThreadNameInformationPrivate,
+            &ThreadNameInfo,
+            sizeof(ThreadNameInfo));
+#endif
+    }
+    return CXPLAT_STATUS_SUCCESS;
+}
+#define CxPlatThreadDelete(Thread) CxPlatCloseHandle(*(Thread))
+#define CxPlatThreadWait(Thread) WaitForSingleObject(*(Thread), INFINITE)
+typedef uint32_t CXPLAT_THREAD_ID;
+#define CxPlatCurThreadID() GetCurrentThreadId()
 
 //
 // Crypto Interfaces

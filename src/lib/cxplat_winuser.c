@@ -2,9 +2,6 @@
 #include "cxplat_trace.h"
 #include <bcrypt.h>
 
-#define CXPLAT_POOL_PROC      '10xC' // Cx01
-#define CXPLAT_POOL_TMP_ALLOC '20xC' // Cx02
-
 typedef struct CX_PLATFORM {
 
     //

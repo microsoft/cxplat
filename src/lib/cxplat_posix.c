@@ -30,6 +30,12 @@ typedef struct CX_PLATFORM {
 
 } CX_PLATFORM;
 
+#ifdef CXPLAT_NUMA_AWARE
+#include <numa.h>               // If missing: `apt-get install -y libnuma-dev`
+uint32_t CxPlatNumaNodeCount;
+cpu_set_t* CxPlatNumaNodeMasks;
+#endif // CXPLAT_NUMA_AWARE
+
 CX_PLATFORM CxPlatform = { NULL };
 
 //
@@ -111,6 +117,21 @@ CxPlatInitialize(
     CxPlatProcessorCount = (uint32_t)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 
+#ifdef CXPLAT_NUMA_AWARE
+    if (numa_available() >= 0) {
+        CxPlatNumaNodeCount = (uint32_t)numa_num_configured_nodes();
+        CxPlatNumaNodeMasks =
+            CXPLAT_ALLOC_NONPAGED(sizeof(cpu_set_t) * CxPlatNumaNodeCount, CXPLAT_POOL_PLATFORM_PROC);
+        CXPLAT_FRE_ASSERT(CxPlatNumaNodeMasks);
+        for (uint32_t n = 0; n < CxPlatNumaNodeCount; ++n) {
+            CPU_ZERO(&CxPlatNumaNodeMasks[n]);
+            CXPLAT_FRE_ASSERT(numa_node_to_cpus_compat((int)n, CxPlatNumaNodeMasks[n].__bits, sizeof(cpu_set_t)) >= 0);
+        }
+    } else {
+        CxPlatNumaNodeCount = 0;
+    }
+#endif // CXPLAT_NUMA_AWARE
+
     RandomFd = open("/dev/urandom", O_RDONLY|O_CLOEXEC);
     if (RandomFd == -1) {
         CxPlatTraceEvent(
@@ -132,6 +153,11 @@ CxPlatUninitialize(
     )
 {
     close(RandomFd);
+
+#ifdef CXPLAT_NUMA_AWARE
+    CXPLAT_FREE(CxPlatNumaNodeMasks, CXPLAT_POOL_PLATFORM_PROC);
+#endif
+
     CxPlatTraceLogInfo(
         "[ dso] Uninitialized");
 }
@@ -280,6 +306,215 @@ CxPlatProcCurrentNumber(
     // Intel macOS can return incorrect values for CPUID, so treat as single core.
     //
     return 0;
+#endif // CX_PLATFORM_DARWIN
+}
+
+#if defined(CX_PLATFORM_LINUX)
+
+CXPLAT_STATUS
+CxPlatThreadCreate(
+    _In_ CXPLAT_THREAD_CONFIG* Config,
+    _Out_ CXPLAT_THREAD* Thread
+    )
+{
+    CXPLAT_STATUS Status = CXPLAT_STATUS_SUCCESS;
+
+    pthread_attr_t Attr;
+    if (pthread_attr_init(&Attr)) {
+        CxPlatTraceEvent(
+            "[ lib] ERROR, %u, %s.",
+            errno,
+            "pthread_attr_init failed");
+        return errno;
+    }
+
+#ifdef __GLIBC__
+    if (Config->Flags & CXPLAT_THREAD_FLAG_SET_AFFINITIZE) {
+        cpu_set_t CpuSet;
+        CPU_ZERO(&CpuSet);
+        CPU_SET(Config->IdealProcessor, &CpuSet);
+        if (pthread_attr_setaffinity_np(&Attr, sizeof(CpuSet), &CpuSet)) {
+            CxPlatTraceEvent(
+                "[ lib] ERROR, %s.",
+                "pthread_attr_setaffinity_np failed");
+        }
+    } else {
+        // TODO - Set Linux equivalent of NUMA affinity.
+    }
+    // There is no way to set an ideal processor in Linux.
+#endif
+
+    if (Config->Flags & CXPLAT_THREAD_FLAG_HIGH_PRIORITY) {
+        struct sched_param Params;
+        Params.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        if (pthread_attr_setschedparam(&Attr, &Params)) {
+            CxPlatTraceEvent(
+                "[ lib] ERROR, %u, %s.",
+                errno,
+                "pthread_attr_setschedparam failed");
+        }
+    }
+
+#ifdef CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+    CXPLAT_THREAD_CUSTOM_CONTEXT* CustomContext =
+        CXPLAT_ALLOC_NONPAGED(sizeof(CXPLAT_THREAD_CUSTOM_CONTEXT), CXPLAT_POOL_CUSTOM_THREAD);
+    if (CustomContext == NULL) {
+        Status = CXPLAT_STATUS_OUT_OF_MEMORY;
+        CxPlatTraceEvent(
+            "Allocation of '%s' failed. (%llu bytes)",
+            "Custom thread context",
+            sizeof(CXPLAT_THREAD_CUSTOM_CONTEXT));
+    }
+    CustomContext->Callback = Config->Callback;
+    CustomContext->Context = Config->Context;
+
+    if (pthread_create(Thread, &Attr, CxPlatThreadCustomStart, CustomContext)) {
+        Status = errno;
+        CxPlatTraceEvent(
+            "[ lib] ERROR, %u, %s.",
+            Status,
+            "pthread_create failed");
+        CXPLAT_FREE(CustomContext, CXPLAT_POOL_CUSTOM_THREAD);
+    }
+
+#else // CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+    //
+    // If pthread_create fails with an error code, then try again without the attribute
+    // because the CPU might be offline.
+    //
+    if (pthread_create(Thread, &Attr, Config->Callback, Config->Context)) {
+        CxPlatTraceLogWarning(
+            "[ lib] pthread_create failed, retrying without affinitization");
+        if (pthread_create(Thread, NULL, Config->Callback, Config->Context)) {
+            Status = errno;
+            CxPlatTraceEvent(
+                "[ lib] ERROR, %u, %s.",
+                Status,
+                "pthread_create failed");
+        }
+    }
+
+#endif // !CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+#if !defined(__ANDROID__)
+    if (Status == CXPLAT_STATUS_SUCCESS) {
+        if (Config->Flags & CXPLAT_THREAD_FLAG_SET_AFFINITIZE) {
+            cpu_set_t CpuSet;
+            CPU_ZERO(&CpuSet);
+            CPU_SET(Config->IdealProcessor, &CpuSet);
+            if (pthread_setaffinity_np(*Thread, sizeof(CpuSet), &CpuSet)) {
+                CxPlatTraceEvent(
+                    "[ lib] ERROR, %s.",
+                    "pthread_setaffinity_np failed");
+            }
+#ifdef CXPLAT_NUMA_AWARE
+        } else if (CxPlatNumaNodeCount != 0) {
+            int IdealNumaNode = numa_node_of_cpu((int)Config->IdealProcessor);
+            if (pthread_setaffinity_np(*Thread, sizeof(cpu_set_t), &CxPlatNumaNodeMasks[IdealNumaNode])) {
+                CxPlatTraceEvent(
+                    "[ lib] ERROR, %s.",
+                    "pthread_setaffinity_np failed");
+            }
+#endif
+        }
+    }
+#endif
+
+    pthread_attr_destroy(&Attr);
+
+    return Status;
+}
+
+#elif defined(CX_PLATFORM_DARWIN)
+
+CXPLAT_STATUS
+CxPlatThreadCreate(
+    _In_ CXPLAT_THREAD_CONFIG* Config,
+    _Out_ CXPLAT_THREAD* Thread
+    )
+{
+    CXPLAT_STATUS Status = CXPLAT_STATUS_SUCCESS;
+    pthread_attr_t Attr;
+    if (pthread_attr_init(&Attr)) {
+        CxPlatTraceEvent(
+            "[ lib] ERROR, %u, %s.",
+            errno,
+            "pthread_attr_init failed");
+        return errno;
+    }
+
+    // XXX: Set processor affinity
+
+    if (Config->Flags & CXPLAT_THREAD_FLAG_HIGH_PRIORITY) {
+        struct sched_param Params;
+        Params.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        if (!pthread_attr_setschedparam(&Attr, &Params)) {
+            CxPlatTraceEvent(
+                "[ lib] ERROR, %u, %s.",
+                errno,
+                "pthread_attr_setschedparam failed");
+        }
+    }
+
+    if (pthread_create(Thread, &Attr, Config->Callback, Config->Context)) {
+        Status = errno;
+        CxPlatTraceEvent(
+            "[ lib] ERROR, %u, %s.",
+            Status,
+            "pthread_create failed");
+    }
+
+    pthread_attr_destroy(&Attr);
+
+    return Status;
+}
+
+#endif // CX_PLATFORM
+
+void
+CxPlatThreadDelete(
+    _Inout_ CXPLAT_THREAD* Thread
+    )
+{
+    UNREFERENCED_PARAMETER(Thread);
+}
+
+void
+CxPlatThreadWait(
+    _Inout_ CXPLAT_THREAD* Thread
+    )
+{
+    CXPLAT_DBG_ASSERT(pthread_equal(*Thread, pthread_self()) == 0);
+    CXPLAT_FRE_ASSERT(pthread_join(*Thread, NULL) == 0);
+}
+
+CXPLAT_THREAD_ID
+CxPlatCurThreadID(
+    void
+    )
+{
+
+// For FreeBSD
+#if defined(__FreeBSD__)
+    return pthread_getthreadid_np();
+
+#elif defined(CX_PLATFORM_LINUX)
+
+    CXPLAT_STATIC_ASSERT(sizeof(pid_t) <= sizeof(CXPLAT_THREAD_ID), "PID size exceeds the expected size");
+    return syscall(SYS_gettid);
+
+#elif defined(CX_PLATFORM_DARWIN)
+    // cppcheck-suppress duplicateExpression
+    CXPLAT_STATIC_ASSERT(sizeof(uint32_t) == sizeof(CXPLAT_THREAD_ID), "The cast depends on thread id being 32 bits");
+    uint64_t Tid;
+    int Res = pthread_threadid_np(NULL, &Tid);
+    UNREFERENCED_PARAMETER(Res);
+    CXPLAT_DBG_ASSERT(Res == 0);
+    CXPLAT_DBG_ASSERT(Tid <= UINT32_MAX);
+    return (CXPLAT_THREAD_ID)Tid;
+
 #endif // CX_PLATFORM_DARWIN
 }
 

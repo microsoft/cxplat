@@ -45,173 +45,6 @@ extern "C" {
 #endif
 
 //
-// Defines that are present on other platforms but not this one
-//
-
-#define UNREFERENCED_PARAMETER(P) (void)(P)
-
-#ifndef FALSE
-#define FALSE 0
-#define TRUE 1
-#endif
-
-typedef unsigned char BOOLEAN;
-
-inline
-short
-InterlockedIncrement16(
-    _Inout_ _Interlocked_operand_ short volatile *Addend
-    )
-{
-    return __sync_add_and_fetch(Addend, (short)1);
-}
-
-inline
-short
-InterlockedDecrement16(
-    _Inout_ _Interlocked_operand_ short volatile *Addend
-    )
-{
-    return __sync_sub_and_fetch(Addend, (short)1);
-}
-
-inline
-long
-InterlockedIncrement(
-    _Inout_ _Interlocked_operand_ long volatile *Addend
-    )
-{
-    return __sync_add_and_fetch(Addend, (long)1);
-}
-
-inline
-long
-InterlockedDecrement(
-    _Inout_ _Interlocked_operand_ long volatile *Addend
-    )
-{
-    return __sync_sub_and_fetch(Addend, (long)1);
-}
-
-inline
-int64_t
-InterlockedIncrement64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Addend
-    )
-{
-    return __sync_add_and_fetch(Addend, (int64_t)1);
-}
-
-inline
-int64_t
-InterlockedDecrement64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Addend
-    )
-{
-    return __sync_sub_and_fetch(Addend, (int64_t)1);
-}
-
-inline
-long
-InterlockedAnd(
-    _Inout_ _Interlocked_operand_ long volatile *Destination,
-    _In_ long Value
-    )
-{
-    return __sync_and_and_fetch(Destination, Value);
-}
-
-inline
-long
-InterlockedOr(
-    _Inout_ _Interlocked_operand_ long volatile *Destination,
-    _In_ long Value
-    )
-{
-    return __sync_or_and_fetch(Destination, Value);
-}
-
-inline
-short
-InterlockedCompareExchange16(
-    _Inout_ _Interlocked_operand_ short volatile *Destination,
-    _In_ short ExChange,
-    _In_ short Comperand
-    )
-{
-    return __sync_val_compare_and_swap(Destination, Comperand, ExChange);
-}
-
-inline
-short
-InterlockedCompareExchange(
-    _Inout_ _Interlocked_operand_ long volatile *Destination,
-    _In_ long ExChange,
-    _In_ long Comperand
-    )
-{
-    return __sync_val_compare_and_swap(Destination, Comperand, ExChange);
-}
-
-inline
-int64_t
-InterlockedCompareExchange64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Destination,
-    _In_ int64_t ExChange,
-    _In_ int64_t Comperand
-    )
-{
-    return __sync_val_compare_and_swap(Destination, Comperand, ExChange);
-}
-
-inline
-int64_t
-InterlockedExchangeAdd64(
-    _Inout_ _Interlocked_operand_ int64_t volatile *Addend,
-    _In_ int64_t Value
-    )
-{
-    return __sync_fetch_and_add(Addend, Value);
-}
-
-inline
-void*
-InterlockedExchangePointer(
-    _Inout_ _Interlocked_operand_ void* volatile *Target,
-    _In_opt_ void* Value
-    )
-{
-    return __sync_lock_test_and_set(Target, Value);
-}
-
-inline
-void*
-InterlockedFetchAndClearPointer(
-    _Inout_ _Interlocked_operand_ void* volatile *Target
-    )
-{
-    return __sync_fetch_and_and(Target, 0);
-}
-
-inline
-BOOLEAN
-InterlockedFetchAndClearBoolean(
-    _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
-    )
-{
-    return __sync_fetch_and_and(Target, 0);
-}
-
-inline
-BOOLEAN
-InterlockedFetchAndSetBoolean(
-    _Inout_ _Interlocked_operand_ BOOLEAN volatile *Target
-    )
-{
-    return __sync_fetch_and_or(Target, 1);
-}
-
-//
 // Status Codes
 //
 
@@ -608,6 +441,73 @@ extern uint32_t CxPlatProcessorCount;
 
 uint32_t
 CxPlatProcCurrentNumber(
+    void
+    );
+
+//
+// Thread Interfaces
+//
+
+typedef pthread_t CXPLAT_THREAD;
+
+#define CXPLAT_THREAD_CALLBACK(FuncName, CtxVarName) \
+    void* \
+    FuncName( \
+        void* CtxVarName \
+        )
+
+#define CXPLAT_THREAD_RETURN(Status) return NULL;
+
+typedef void* (* LPTHREAD_START_ROUTINE)(void *);
+
+typedef struct CXPLAT_THREAD_CONFIG {
+    uint16_t Flags;
+    uint16_t IdealProcessor;
+    _Field_z_ const char* Name;
+    LPTHREAD_START_ROUTINE Callback;
+    void* Context;
+} CXPLAT_THREAD_CONFIG;
+
+#ifdef CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+//
+// Extension point that allows additional platform specific logic to be executed
+// for every thread created. The platform must define CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+// and implement the CxPlatThreadCustomStart function. CxPlatThreadCustomStart MUST
+// call the Callback passed in. CxPlatThreadCustomStart MUST also free
+// CustomContext (via CXPLAT_FREE(CustomContext, CXPLAT_POOL_CUSTOM_THREAD)) before
+// returning.
+//
+
+typedef struct CXPLAT_THREAD_CUSTOM_CONTEXT {
+    LPTHREAD_START_ROUTINE Callback;
+    void* Context;
+} CXPLAT_THREAD_CUSTOM_CONTEXT;
+
+CXPLAT_THREAD_CALLBACK(CxPlatThreadCustomStart, CustomContext); // CXPLAT_THREAD_CUSTOM_CONTEXT* CustomContext
+
+#endif // CXPLAT_USE_CUSTOM_THREAD_CONTEXT
+
+CXPLAT_STATUS
+CxPlatThreadCreate(
+    _In_ CXPLAT_THREAD_CONFIG* Config,
+    _Out_ CXPLAT_THREAD* Thread
+    );
+
+void
+CxPlatThreadDelete(
+    _Inout_ CXPLAT_THREAD* Thread
+    );
+
+void
+CxPlatThreadWait(
+    _Inout_ CXPLAT_THREAD* Thread
+    );
+
+typedef uint32_t CXPLAT_THREAD_ID;
+
+CXPLAT_THREAD_ID
+CxPlatCurThreadID(
     void
     );
 
