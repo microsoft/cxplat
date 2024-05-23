@@ -54,6 +54,9 @@ void CxPlatTestProcBasic();
 //
 
 void CxPlatTestThreadBasic();
+#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+void CxPlatTestThreadWaitTimeout();
+#endif
 
 //
 // Platform Specific Functions
@@ -127,4 +130,7 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 #define IOCTL_CXPLAT_RUN_THREAD_BASIC \
     CXPLAT_CTL_CODE(6, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-#define CXPLAT_MAX_IOCTL_FUNC_CODE 6
+#define IOCTL_CXPLAT_RUN_THREAD_WAIT_TIMEOUT \
+    CXPLAT_CTL_CODE(7, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+#define CXPLAT_MAX_IOCTL_FUNC_CODE 7

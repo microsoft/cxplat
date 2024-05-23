@@ -498,6 +498,10 @@ CxPlatTestCtlEvtIoDeviceControl(
         CxPlatTestCtlRun(CxPlatTestThreadBasic());
         break;
 
+    case IOCTL_CXPLAT_RUN_THREAD_WAIT_TIMEOUT:
+        CxPlatTestCtlRun(CxPlatTestThreadWaitTimeout());
+        break;
+
     default:
         Status = STATUS_NOT_IMPLEMENTED;
         break;

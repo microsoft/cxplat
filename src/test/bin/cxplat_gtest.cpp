@@ -170,6 +170,17 @@ TEST(ThreadSuite, Basic) {
     }
 }
 
+#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+TEST(ThreadSuite, WithTimeout) {
+    TestLogger Logger("CxPlatTestThreadWaitTimeout");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_THREAD_WAIT_TIMEOUT));
+    } else {
+        CxPlatTestThreadWaitTimeout();
+    }
+}
+#endif
+
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {
         if (strcmp("--kernel", argv[i]) == 0) {
