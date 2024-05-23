@@ -38,7 +38,7 @@ void CxPlatTestThreadBasic()
 
     TEST_CXPLAT(CxPlatThreadCreate(&ThreadConfig, &Thread));
 
-    CxPlatThreadWait(&Thread);
+    CxPlatThreadWaitForever(&Thread);
 
     TEST_TRUE(Context != INITIAL_CONTEXT_VALUE);
 

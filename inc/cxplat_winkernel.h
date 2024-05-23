@@ -520,7 +520,7 @@ Error:
     return Status;
 }
 #define CxPlatThreadDelete(Thread) ObDereferenceObject(*(Thread))
-#define CxPlatThreadWait(Thread) \
+#define CxPlatThreadWaitForever(Thread) \
     KeWaitForSingleObject( \
         *(Thread), \
         Executive, \

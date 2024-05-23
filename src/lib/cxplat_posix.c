@@ -482,7 +482,7 @@ CxPlatThreadDelete(
 }
 
 void
-CxPlatThreadWait(
+CxPlatThreadWaitForever(
     _Inout_ CXPLAT_THREAD* Thread
     )
 {
