@@ -399,7 +399,7 @@ CxPlatInternalThreadWaitWithTimeout(
     LARGE_INTEGER Timeout100Ns;
     CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
     Timeout100Ns.QuadPart = -1 * UInt32x32To64(TimeoutMs, 10000);
-    return KeWaitForSingleObject(Thread, Executive, KernelMode, FALSE, &Timeout100Ns);
+    return KeWaitForSingleObject(*(Thread), Executive, KernelMode, FALSE, &Timeout100Ns);
 }
 
 inline
@@ -541,7 +541,7 @@ Error:
         FALSE, \
         NULL)
 #define CxPlatThreadWaitWithTimeout(Thread, TimeoutMs) \
-    (STATUS_SUCCESS == CxPlatInternalThreadWaitWithTimeout(&Thread, TimeoutMs))
+    (STATUS_SUCCESS == CxPlatInternalThreadWaitWithTimeout(Thread, TimeoutMs))
 typedef ULONG_PTR CXPLAT_THREAD_ID;
 #define CxPlatCurThreadID() ((CXPLAT_THREAD_ID)PsGetCurrentThreadId())
 
