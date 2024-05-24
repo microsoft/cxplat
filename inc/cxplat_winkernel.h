@@ -390,6 +390,19 @@ typedef struct _ETHREAD *CXPLAT_THREAD;
 #define CXPLAT_THREAD_RETURN(Status) PsTerminateSystemThread(Status)
 
 inline
+NTSTATUS
+CxPlatInternalThreadWaitWithTimeout(
+    _In_ CXPLAT_THREAD* Thread,
+    _In_ uint32_t TimeoutMs
+    )
+{
+    LARGE_INTEGER Timeout100Ns;
+    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
+    Timeout100Ns.QuadPart = -1 * UInt32x32To64(TimeoutMs, 10000);
+    return KeWaitForSingleObject(*(Thread), Executive, KernelMode, FALSE, &Timeout100Ns);
+}
+
+inline
 CXPLAT_STATUS
 CxPlatThreadCreate(
     _In_ CXPLAT_THREAD_CONFIG* Config,
@@ -520,13 +533,15 @@ Error:
     return Status;
 }
 #define CxPlatThreadDelete(Thread) ObDereferenceObject(*(Thread))
-#define CxPlatThreadWait(Thread) \
+#define CxPlatThreadWaitForever(Thread) \
     KeWaitForSingleObject( \
         *(Thread), \
         Executive, \
         KernelMode, \
         FALSE, \
         NULL)
+#define CxPlatThreadWaitWithTimeout(Thread, TimeoutMs) \
+    (STATUS_SUCCESS == CxPlatInternalThreadWaitWithTimeout(Thread, TimeoutMs))
 typedef ULONG_PTR CXPLAT_THREAD_ID;
 #define CxPlatCurThreadID() ((CXPLAT_THREAD_ID)PsGetCurrentThreadId())
 

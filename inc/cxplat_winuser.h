@@ -538,7 +538,17 @@ CxPlatThreadCreate(
     return CXPLAT_STATUS_SUCCESS;
 }
 #define CxPlatThreadDelete(Thread) CxPlatCloseHandle(*(Thread))
-#define CxPlatThreadWait(Thread) WaitForSingleObject(*(Thread), INFINITE)
+#define CxPlatThreadWaitForever(Thread) WaitForSingleObject(*(Thread), INFINITE)
+inline
+BOOLEAN
+CxPlatThreadWaitWithTimeout(
+    _In_ CXPLAT_THREAD* Thread,
+    _In_ uint32_t TimeoutMs
+    )
+{
+    CXPLAT_DBG_ASSERT(TimeoutMs != UINT32_MAX);
+    return WAIT_OBJECT_0 == WaitForSingleObject(*Thread, TimeoutMs);
+}
 typedef uint32_t CXPLAT_THREAD_ID;
 #define CxPlatCurThreadID() GetCurrentThreadId()
 

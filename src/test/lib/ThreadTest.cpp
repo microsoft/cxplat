@@ -11,13 +11,24 @@ Abstract:
 
 #include "precomp.h"
 
-#define INITIAL_CONTEXT_VALUE ((CXPLAT_THREAD_ID)-1)
+typedef struct THREAD_CONTEXT {
+    CXPLAT_THREAD_ID ThreadId;
+    uint32_t DelayMs;
+} THREAD_CONTEXT;
 
-CXPLAT_THREAD_CALLBACK(ThreadFn, Context)
+#define INITIAL_THREAD_ID_VALUE ((CXPLAT_THREAD_ID)-1)
+
+CXPLAT_THREAD_CALLBACK(ThreadFn, Ctx)
 {
-    TEST_EQUAL_GOTO(*(CXPLAT_THREAD_ID*)Context, INITIAL_CONTEXT_VALUE);
+    THREAD_CONTEXT* Context = (THREAD_CONTEXT*)Ctx;
 
-    *(CXPLAT_THREAD_ID*)Context = CxPlatCurThreadID();
+    if (Context->DelayMs > 0) {
+        CxPlatSleep(Context->DelayMs);
+    }
+
+    TEST_EQUAL_GOTO(Context->ThreadId, INITIAL_THREAD_ID_VALUE);
+
+    *(CXPLAT_THREAD_ID*)Ctx = CxPlatCurThreadID();
 
 Failure:
 
@@ -28,7 +39,10 @@ void CxPlatTestThreadBasic()
 {
     CXPLAT_THREAD Thread;
     CXPLAT_THREAD_CONFIG ThreadConfig;
-    CXPLAT_THREAD_ID Context = INITIAL_CONTEXT_VALUE;
+    THREAD_CONTEXT Context;
+
+    Context.ThreadId = INITIAL_THREAD_ID_VALUE;
+    Context.DelayMs = 0;
 
     ThreadConfig.Flags = 0;
     ThreadConfig.IdealProcessor = 0;
@@ -38,9 +52,41 @@ void CxPlatTestThreadBasic()
 
     TEST_CXPLAT(CxPlatThreadCreate(&ThreadConfig, &Thread));
 
-    CxPlatThreadWait(&Thread);
+    CxPlatThreadWaitForever(&Thread);
 
-    TEST_TRUE(Context != INITIAL_CONTEXT_VALUE);
+    TEST_TRUE_GOTO(Context.ThreadId != INITIAL_THREAD_ID_VALUE);
+
+Failure:
 
     CxPlatThreadDelete(&Thread);
 }
+
+#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+void CxPlatTestThreadWaitTimeout()
+{
+    CXPLAT_THREAD Thread;
+    CXPLAT_THREAD_CONFIG ThreadConfig;
+    THREAD_CONTEXT Context;
+
+    Context.ThreadId = INITIAL_THREAD_ID_VALUE;
+    Context.DelayMs = 1000;
+
+    ThreadConfig.Flags = 0;
+    ThreadConfig.IdealProcessor = 0;
+    ThreadConfig.Name = "CxPlatTestThreadWaitTimeout";
+    ThreadConfig.Callback = ThreadFn;
+    ThreadConfig.Context = (void*)&Context;
+
+    TEST_CXPLAT(CxPlatThreadCreate(&ThreadConfig, &Thread));
+
+    TEST_FALSE_GOTO(CxPlatThreadWaitWithTimeout(&Thread, 50));
+
+    TEST_TRUE_GOTO(CxPlatThreadWaitWithTimeout(&Thread, 5000));
+
+    TEST_TRUE_GOTO(Context.ThreadId != INITIAL_THREAD_ID_VALUE);
+
+Failure:
+
+    CxPlatThreadDelete(&Thread);
+}
+#endif
