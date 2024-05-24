@@ -9,6 +9,9 @@ Abstract:
 
 --*/
 
+#ifndef CXPLAT_H
+#define CXPLAT_H
+
 #ifdef CX_PLATFORM_WINKERNEL
 #include "cxplat_winkernel_shim.h"
 #elif CX_PLATFORM_LINUX
@@ -106,4 +109,6 @@ CxPlatGetAllocFailDenominator(
 
 #if defined(__cplusplus)
 }
+#endif
+
 #endif
