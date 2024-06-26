@@ -1,4 +1,4 @@
-name: Build WinKernel
+name: Build Windows VS
 
 # The caller is responsible for making sure all options passed to this workflow are valid and compatible with each other.
 
@@ -42,7 +42,7 @@ on:
 permissions: read-all
 
 jobs:
-  build-windows-kernel-reuse:
+  build-windows-vs-reuse:
     name: Build
     runs-on: ${{ inputs.os }}
     steps:
@@ -60,6 +60,7 @@ jobs:
       shell: pwsh
       run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }}
     - name: Sign Kernel
+      if: inputs.plat == 'winkernel'
       shell: pwsh
       run: scripts/sign.ps1 -Config ${{ inputs.config }} -Arch ${{ inputs.arch }}
     - name: Upload build artifacts
