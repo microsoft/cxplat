@@ -69,8 +69,12 @@ param (
     [string]$Arch = "",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel", "windows-vs")] # For future expansion
+    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel")] # For future expansion
     [string]$Platform = "",
+
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("cmake", "vs")] # For future expansion
+    [string]$BuildToolSet = "cmake",
 
     [Parameter(Mandatory = $false)]
     [switch]$DisableTest = $false,
@@ -117,6 +121,10 @@ param (
 
 Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+if ($Platform -eq "winkernel") {
+    $BuildToolSet = "vs"
+}
 
 if ($PSVersionTable.PSVersion.Major -lt 7) {
     # For convenience of locally building winkernel (which is typically done from a Developer shell for VS),
@@ -409,25 +417,27 @@ function CMake-Build {
 #                     Main Execution                         #
 ##############################################################
 
-if ($Platform -eq "winkernel") {
-    # Restore Nuget packages.
-    Log "Restoring packages..."
-    msbuild cxplat.kernel.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
+if ($BuildToolSet -eq "vs") {
+    if ($Platform -eq "winkernel") {
+        # Restore Nuget packages.
+        Log "Restoring packages..."
+        msbuild cxplat.kernel.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
 
-    if (!$ConfigureOnly) {
-        # Build the code.
-        Log "Building..."
-        msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
-    }
-} if ($Platform -eq "windows-vs") {
-    # Restore Nuget packages.
-    Log "Restoring packages..."
-    msbuild cxplat.winuser.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
+        if (!$ConfigureOnly) {
+            # Build the code.
+            Log "Building..."
+            msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        }
+    } if ($Platform -eq "windows") {
+        # Restore Nuget packages.
+        Log "Restoring packages..."
+        msbuild cxplat.winuser.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
 
-    if (!$ConfigureOnly) {
-        # Build the code.
-        Log "Building..."
-        msbuild cxplat.winuser.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        if (!$ConfigureOnly) {
+            # Build the code.
+            Log "Building..."
+            msbuild cxplat.winuser.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        }
     }
 } else {
     # Generate the build files.

@@ -61,8 +61,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <TargetName>cxplat</TargetName>
-    <IntDir>$(SolutionDir)build\winuser-vs\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)artifacts\bin\winuser-vs\$(Platform)_$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\winuser\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)artifacts\bin\winuser\$(Platform)_$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />
