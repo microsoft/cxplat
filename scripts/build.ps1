@@ -417,7 +417,7 @@ if ($Platform -eq "winkernel") {
     if (!$ConfigureOnly) {
         # Build the code.
         Log "Building..."
-        msbuild cxplat.kerenl.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
     }
 } if ($Platform -eq "windows-vs") {
     # Restore Nuget packages.
