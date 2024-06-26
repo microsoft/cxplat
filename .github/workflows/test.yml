@@ -29,7 +29,7 @@ jobs:
           { config: "Debug", plat: "winkernel", os: "windows-2022", arch: "x64" },
           { config: "Release", plat: "winkernel", os: "windows-2022", arch: "x64" }
         ]
-    uses: ./.github/workflows/build-reuse-winkernel.yml
+    uses: ./.github/workflows/build-reuse-vs.yml
     with:
       config: ${{ matrix.vec.config }}
       plat: ${{ matrix.vec.plat }}

@@ -69,7 +69,7 @@ param (
     [string]$Arch = "",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel")] # For future expansion
+    [ValidateSet("gamecore_console", "uwp", "windows", "linux", "macos", "android", "ios", "winkernel", "windows-vs")] # For future expansion
     [string]$Platform = "",
 
     [Parameter(Mandatory = $false)]
@@ -417,7 +417,17 @@ if ($Platform -eq "winkernel") {
     if (!$ConfigureOnly) {
         # Build the code.
         Log "Building..."
-        msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        msbuild cxplat.kerenl.sln /m /p:Configuration=$Config /p:Platform=$Arch
+    }
+} if ($Platform -eq "windows-vs") {
+    # Restore Nuget packages.
+    Log "Restoring packages..."
+    msbuild cxplat.winuser.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
+
+    if (!$ConfigureOnly) {
+        # Build the code.
+        Log "Building..."
+        msbuild cxplat.winuser.sln /m /p:Configuration=$Config /p:Platform=$Arch
     }
 } else {
     # Generate the build files.

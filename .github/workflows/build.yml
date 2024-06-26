@@ -36,18 +36,18 @@ jobs:
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-
-  build-windows-kernel:
-    name: WinKernel
+  
+  build-vs:
+    name: WinUser and WinKernel (VS)
     needs: []
     strategy:
       fail-fast: false
       matrix:
         config: ['Debug', 'Release']
-        plat: [winkernel]
+        plat: ['winkernel', 'windows-vs']
         os: ['windows-2022']
         arch: [x64, arm64]
-    uses: ./.github/workflows/build-reuse-winkernel.yml
+    uses: ./.github/workflows/build-reuse-vs.yml
     with:
       config: ${{ matrix.config }}
       plat: ${{ matrix.plat }}
@@ -116,7 +116,7 @@ jobs:
 
   Complete:
     name: Complete
-    needs: [build-windows, build-windows-kernel, build-ubuntu-cross-compile, build-ubuntu, build-darwin]
+    needs: [build-windows, build-vs, build-ubuntu-cross-compile, build-ubuntu, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - run: echo "CI succeeded"

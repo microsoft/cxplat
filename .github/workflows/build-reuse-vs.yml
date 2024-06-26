@@ -22,6 +22,7 @@ on:
         default: 'winkernel'
         # options:
         #   - winkernel
+        #   - windows-vs
       os:
         required: false
         type: string
