@@ -22,7 +22,7 @@ on:
         default: 'winkernel'
         # options:
         #   - winkernel
-        #   - windows-vs
+        #   - windows
       os:
         required: false
         type: string
@@ -58,7 +58,7 @@ jobs:
       uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce
     - name: Build
       shell: pwsh
-      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }}
+      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} -BuildToolSet vs
     - name: Sign Kernel
       if: inputs.plat == 'winkernel'
       shell: pwsh
