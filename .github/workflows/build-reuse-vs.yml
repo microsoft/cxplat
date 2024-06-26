@@ -1,4 +1,4 @@
-name: Build WinKernel
+name: Build Windows VS
 
 # The caller is responsible for making sure all options passed to this workflow are valid and compatible with each other.
 
@@ -22,6 +22,7 @@ on:
         default: 'winkernel'
         # options:
         #   - winkernel
+        #   - windows
       os:
         required: false
         type: string
@@ -41,7 +42,7 @@ on:
 permissions: read-all
 
 jobs:
-  build-windows-kernel-reuse:
+  build-windows-vs-reuse:
     name: Build
     runs-on: ${{ inputs.os }}
     steps:
@@ -57,12 +58,13 @@ jobs:
       uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce
     - name: Build
       shell: pwsh
-      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }}
+      run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} -BuildToolSet vs
     - name: Sign Kernel
+      if: inputs.plat == 'winkernel'
       shell: pwsh
       run: scripts/sign.ps1 -Config ${{ inputs.config }} -Arch ${{ inputs.arch }}
     - name: Upload build artifacts
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
       with:
-        name: ${{ inputs.config }}-${{ inputs.plat }}-${{ inputs.os }}-${{ inputs.arch }}
+        name: ${{ inputs.config }}-${{ inputs.plat }}-${{ inputs.os }}-${{ inputs.arch }}-vs
         path: artifacts

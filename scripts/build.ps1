@@ -73,6 +73,10 @@ param (
     [string]$Platform = "",
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet("cmake", "vs")] # For future expansion
+    [string]$BuildToolSet = "",
+
+    [Parameter(Mandatory = $false)]
     [switch]$DisableTest = $false,
 
     [Parameter(Mandatory = $false)]
@@ -117,6 +121,20 @@ param (
 
 Set-StrictMode -Version 'Latest'
 $PSDefaultParameterValues['*:ErrorAction'] = 'Stop'
+
+if ($BuildToolSet -eq "") {
+    # BuildToolSet is not set. Infer build toolset based on platform.
+    if ($Platform -eq "winkernel") {
+        # By default, only build winkernel with VS.
+        $BuildToolSet = "vs"
+    } else {
+        $BuildToolSet = "cmake"
+    }
+} else {
+    if ($BuildToolSet -eq "vs" -and -not ($Platform -in @("windows", "winkernel"))) {
+        Write-Error "[$(Get-Date)] Platform not supported by the VS build toolset"
+    }
+}
 
 if ($PSVersionTable.PSVersion.Major -lt 7) {
     # For convenience of locally building winkernel (which is typically done from a Developer shell for VS),
@@ -409,15 +427,29 @@ function CMake-Build {
 #                     Main Execution                         #
 ##############################################################
 
-if ($Platform -eq "winkernel") {
-    # Restore Nuget packages.
-    Log "Restoring packages..."
-    msbuild cxplat.kernel.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
+if ($BuildToolSet -eq "vs") {
+    if ($Platform -eq "winkernel") {
+        # Restore Nuget packages.
+        Log "Restoring packages..."
+        msbuild cxplat.kernel.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
 
-    if (!$ConfigureOnly) {
-        # Build the code.
-        Log "Building..."
-        msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        if (!$ConfigureOnly) {
+            # Build the code.
+            Log "Building..."
+            msbuild cxplat.kernel.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        }
+    } elseif ($Platform -eq "windows") {
+        # Restore Nuget packages.
+        Log "Restoring packages..."
+        msbuild cxplat.winuser.sln -t:restore /p:RestorePackagesConfig=true /p:Configuration=$Config /p:Platform=$Arch
+
+        if (!$ConfigureOnly) {
+            # Build the code.
+            Log "Building..."
+            msbuild cxplat.winuser.sln /m /p:Configuration=$Config /p:Platform=$Arch
+        }
+    } else {
+        Write-Error "[$(Get-Date)] Platform not supported by the VS build toolset 1"
     }
 } else {
     # Generate the build files.

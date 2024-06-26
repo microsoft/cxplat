@@ -29,7 +29,7 @@ jobs:
           { config: "Debug", plat: "winkernel", os: "windows-2022", arch: "x64" },
           { config: "Release", plat: "winkernel", os: "windows-2022", arch: "x64" }
         ]
-    uses: ./.github/workflows/build-reuse-winkernel.yml
+    uses: ./.github/workflows/build-reuse-vs.yml
     with:
       config: ${{ matrix.vec.config }}
       plat: ${{ matrix.vec.plat }}
@@ -160,7 +160,7 @@ jobs:
     - name: Download Build Artifacts
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
       with: # note we always use binaries built on windows-2022.
-        name: ${{ matrix.vec.config }}-${{ matrix.vec.plat }}-windows-2022-${{ matrix.vec.arch }}
+        name: ${{ matrix.vec.config }}-${{ matrix.vec.plat }}-windows-2022-${{ matrix.vec.arch }}-vs
         path: artifacts
     - name: Download Build Artifacts for Testing From WinUser
       uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e
