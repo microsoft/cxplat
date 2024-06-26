@@ -36,7 +36,7 @@ jobs:
       plat: ${{ matrix.plat }}
       os: ${{ matrix.os }}
       arch: ${{ matrix.arch }}
-  
+
   build-vs:
     name: WinUser and WinKernel (VS)
     needs: []
