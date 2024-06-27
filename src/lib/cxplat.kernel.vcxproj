@@ -75,7 +75,8 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <!-- the following paths are for compiling cxplat in the consumer $(SolutionDir)submodules\cxplat\inc;$(SolutionDir)submodules\cxplat\src\inc; -->
+      <AdditionalIncludeDirectories>$(SolutionDir)submodules\cxplat\inc;$(SolutionDir)submodules\cxplat\src\inc;$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
