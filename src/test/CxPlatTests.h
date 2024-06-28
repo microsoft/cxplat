@@ -56,8 +56,12 @@ void CxPlatTestProcBasic();
 void CxPlatTestThreadBasic();
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
 void CxPlatTestThreadWaitTimeout();
-void VectorBasic();
 #endif
+
+//
+// Vector Tests
+//
+void VectorBasic();
 
 //
 // Platform Specific Functions
