@@ -5,7 +5,7 @@
 
 Abstract:
 
-    Event test.
+    KArray test.
 
 --*/
 
