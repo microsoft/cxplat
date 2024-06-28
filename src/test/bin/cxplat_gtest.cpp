@@ -179,6 +179,15 @@ TEST(ThreadSuite, WithTimeout) {
         CxPlatTestThreadWaitTimeout();
     }
 }
+
+TEST(KArraySuite, Basic) {
+    TestLogger Logger("KArrayBasic");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_KARRAY_BASIC));
+    } else {
+        KArrayBasic();
+    }
+}
 #endif
 
 int main(int argc, char** argv) {

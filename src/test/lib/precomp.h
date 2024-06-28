@@ -44,6 +44,8 @@
 
 #include "TestAbstractionLayer.h"
 
+#include "karray.h"
+
 #if defined(_ARM64_) || defined(_ARM64EC_)
 #pragma optimize("", off)
 #endif

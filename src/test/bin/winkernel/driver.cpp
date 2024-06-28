@@ -88,6 +88,8 @@ Return Value:
     WDF_DRIVER_CONFIG Config;
     WDFDRIVER Driver;
 
+    ExInitializeDriverRuntime(0);
+
     //
     // Create the WdfDriver Object
     //

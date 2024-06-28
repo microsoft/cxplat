@@ -39,7 +39,94 @@ Notes:
 #include <intsafe.h>
 #define RtlSIZETMult SizeTMult
 #endif
-#include <wil/wistd_type_traits.h>
+
+namespace cxplatstd     // ("Windows Implementation" std)
+{
+
+//
+// WIL implementation of cxplatstd::addressof
+//
+
+template <class _Tp>
+inline constexpr
+_Tp*
+addressof(_Tp& __x) noexcept
+{
+    return __builtin_addressof(__x);
+}
+
+//
+// WIL implementation of cxplatstd::move
+//
+
+template <class _Tp> struct remove_reference { typedef _Tp type; };
+template <class _Tp> struct remove_reference<_Tp&&> { typedef _Tp type; };
+
+template <class _Tp>
+inline constexpr
+typename remove_reference<_Tp>::type&&
+move(_Tp&& __t) noexcept
+{
+    typedef typename remove_reference<_Tp>::type _Up;
+    return static_cast<_Up&&>(__t);
+}
+
+//
+// WIL dependencies for is_trivially_destructable and is_trivially_constructible
+//
+
+template <class _Tp, _Tp __v>
+struct integral_constant
+{
+    static constexpr const _Tp      value = __v;
+    typedef _Tp               value_type;
+    typedef integral_constant type;
+        constexpr operator value_type() const noexcept { return value; }
+        constexpr value_type operator ()() const noexcept { return value; }
+};
+
+template <class _Tp, _Tp __v>
+    constexpr const _Tp integral_constant<_Tp, __v>::value;
+
+//
+// WIL implementation for is_trivially_constructible
+//
+
+template <class _Tp, class ..._Args>
+    struct is_constructible
+        : public integral_constant<bool, __is_constructible(_Tp, _Args...)>
+    {};
+
+template <class _Tp, class... _Args>
+    struct is_trivially_constructible
+        : integral_constant<bool, __is_trivially_constructible(_Tp, _Args...)>
+    {};
+
+template <class _Tp>
+struct is_trivially_default_constructible
+    : public is_trivially_constructible<_Tp>
+{};
+
+template <class _Tp>
+    constexpr bool is_trivially_default_constructible_v
+        = is_trivially_default_constructible<_Tp>::value;
+
+//
+// WIL implementation for is_trivially_destructible
+//
+
+template <class _Tp>
+struct is_destructible
+    : public integral_constant<bool, __is_destructible(_Tp)> {};
+
+template <class _Tp> struct is_trivially_destructible
+    : public integral_constant<bool, is_destructible<_Tp>::value&& __has_trivial_destructor(_Tp)> {};
+
+template <class _Tp>
+constexpr bool is_trivially_destructible_v
+    = is_trivially_destructible<_Tp>::value;
+
+} // end namespace cxplatstd
 
 #define NOTHING
 
@@ -68,7 +155,7 @@ Notes:
 // Use on code that must always be locked in memory, where you don't want SAL IRQL annotations.
 #define NONPAGEDX CODE_SEG(KRTL_NONPAGED_SEGMENT)
 
-#ifndef _KERNEL_MODE
+#ifndef KERNEL_MODE
 
 #ifndef PAGED_CODE
 #define PAGED_CODE() (void)0
@@ -78,7 +165,7 @@ Notes:
 #define INIT_CODE() (void)0
 #endif // INIT_CODE
 
-#endif // _KERNEL_MODE
+#endif // KERNEL_MODE
 
 // Use on classes or structs.  Class member functions & compiler-generated code
 // will default to the PAGE segment.  You can override any member function with `NONPAGED`.
@@ -124,7 +211,6 @@ RtlFailFast(
 {
     __fastfail(Code);
 }
-
 
 //
 // Pool Allocation routines (in pool.c)
@@ -195,10 +281,10 @@ PAGED void operator delete[](void *p, ULONG tag);
 PAGEDX void __cdecl operator delete[](void *p);
 void __cdecl operator delete(void *p);
 
-#ifndef _KERNEL_MODE
-
+#ifndef KERNEL_MODE
+inline
 PVOID
-ExAllocatePoolWithTag(
+ExAllocatePoolUninitialized(
     POOL_TYPE PoolType,
     SIZE_T NumberOfBytes,
     ULONG Tag
@@ -209,6 +295,7 @@ ExAllocatePoolWithTag(
     return malloc(NumberOfBytes);
 }
 
+inline
 VOID
 ExFreePool(
     _Pre_notnull_ __drv_freesMem(Mem) PVOID P
@@ -217,6 +304,7 @@ ExFreePool(
     free(P);
 }
 
+inline
 VOID
 ExFreePoolWithTag(
     _Pre_notnull_ __drv_freesMem(Mem) PVOID P,
@@ -227,7 +315,7 @@ ExFreePoolWithTag(
     ExFreePool(P);
 }
 
-#endif // _KERNEL_MODE
+#endif // KERNEL_MODE
 
 template <ULONG TAG, ULONG ARENA = PagedPool>
 struct KRTL_CLASS KALLOCATION_TAG
@@ -251,7 +339,7 @@ struct KRTL_CLASS KALLOCATOR : public KALLOCATION_TAG<TAG, ARENA>
     PAGED void *operator new(size_t cb, std::nothrow_t const &)
     {
         PAGED_CODE();
-        return ExAllocatePoolWithTag(static_cast<POOL_TYPE>(ARENA), cb, TAG);
+        return ExAllocatePoolUninitialized(static_cast<POOL_TYPE>(ARENA), cb, TAG);
     }
 
     PAGED void operator delete(void *p)
@@ -276,7 +364,7 @@ struct KRTL_CLASS KALLOCATOR : public KALLOCATION_TAG<TAG, ARENA>
         if (size < cb)
             return nullptr;
 
-        return ExAllocatePoolWithTag(static_cast<POOL_TYPE>(ARENA), size, TAG);
+        return ExAllocatePoolUninitialized(static_cast<POOL_TYPE>(ARENA), size, TAG);
     }
 
     // Array new & delete
@@ -284,7 +372,7 @@ struct KRTL_CLASS KALLOCATOR : public KALLOCATION_TAG<TAG, ARENA>
     PAGED void *operator new[](size_t cb, std::nothrow_t const &)
     {
         PAGED_CODE();
-        return ExAllocatePoolWithTag(static_cast<POOL_TYPE>(ARENA), cb, TAG);
+        return ExAllocatePoolUninitialized(static_cast<POOL_TYPE>(ARENA), cb, TAG);
     }
 
     PAGED void operator delete[](void *p)
@@ -320,7 +408,7 @@ struct KRTL_CLASS_DPC_ALLOC KALLOCATOR_NONPAGED : public KALLOCATION_TAG_DPC_ALL
 
     NONPAGED void *operator new(size_t cb, std::nothrow_t const &)
     {
-        return ExAllocatePoolWithTag(static_cast<POOL_TYPE>(ARENA), cb, TAG);
+        return ExAllocatePoolUninitialized(static_cast<POOL_TYPE>(ARENA), cb, TAG);
     }
 
     NONPAGED void operator delete(void *p)
@@ -341,14 +429,14 @@ struct KRTL_CLASS_DPC_ALLOC KALLOCATOR_NONPAGED : public KALLOCATION_TAG_DPC_ALL
         if (size < cb)
             return nullptr;
 
-        return ExAllocatePoolWithTag(static_cast<POOL_TYPE>(ARENA), size, TAG);
+        return ExAllocatePoolUninitialized(static_cast<POOL_TYPE>(ARENA), size, TAG);
     }
 
     // Array new & delete
 
     NONPAGED void *operator new[](size_t cb, std::nothrow_t const &)
     {
-        return ExAllocatePoolWithTag(static_cast<POOL_TYPE>(ARENA), cb, TAG);
+        return ExAllocatePoolUninitialized(static_cast<POOL_TYPE>(ARENA), cb, TAG);
     }
 
     NONPAGED void operator delete[](void *p)
@@ -519,18 +607,18 @@ public:
         if (!NT_SUCCESS(RtlSIZETMult(sizeof(T), count, reinterpret_cast<SIZE_T*>(&bytesNeeded))))
             return false;
 
-        T * p = (T*)ExAllocatePoolWithTag(PoolType, bytesNeeded, 'rrAK');
+        T * p = (T*)ExAllocatePoolUninitialized(PoolType, bytesNeeded, 'rrAK');
         if (!p)
             return false;
 
-        if constexpr(__is_trivially_copyable(T))
+        if (__is_trivially_copyable(T))
         {
             memcpy(p, _p, m_numElements * sizeof(T));
         }
         else
         {
             for (ULONG i = 0; i < m_numElements; i++)
-                new (wistd::addressof(p[i])) T(wistd::move(_p[i]));
+                new (cxplatstd::addressof(p[i])) T(cxplatstd::move(_p[i]));
         }
 
         if (_p)
@@ -552,22 +640,22 @@ public:
         if (!reserve(count))
             return false;
 
-        if constexpr(wistd::is_trivially_default_constructible_v<T>)
+        if constexpr(cxplatstd::is_trivially_default_constructible_v<T>)
         {
             if (count > m_numElements)
             {
-                memset(wistd::addressof(_p[m_numElements]), 0, (count - m_numElements) * sizeof(T));
+                memset(cxplatstd::addressof(_p[m_numElements]), 0, (count - m_numElements) * sizeof(T));
             }
         }
         else
         {
             for (size_t i = m_numElements; i < count; i++)
             {
-                new(wistd::addressof(_p[i])) T();
+                new(cxplatstd::addressof(_p[i])) T();
             }
         }
 
-        if constexpr(!wistd::is_trivially_destructible_v<T>)
+        if constexpr(!cxplatstd::is_trivially_destructible_v<T>)
         {
             for (size_t i = count; i < m_numElements; i++)
             {
@@ -589,7 +677,7 @@ public:
         if (!grow((size_t)m_numElements+1))
             return false;
 
-        new(wistd::addressof(_p[m_numElements])) T(t);
+        new(cxplatstd::addressof(_p[m_numElements])) T(t);
         ++m_numElements;
         return true;
     }
@@ -604,7 +692,7 @@ public:
         if (!grow((size_t)m_numElements+1))
             return false;
 
-        new(wistd::addressof(_p[m_numElements])) T(wistd::move(t));
+        new(cxplatstd::addressof(_p[m_numElements])) T(cxplatstd::move(t));
         ++m_numElements;
         return true;
     }
@@ -630,7 +718,7 @@ public:
         if (index < m_numElements)
             moveElements((ULONG)index, (ULONG)(index+1), (ULONG)(m_numElements - index));
 
-        new(wistd::addressof(_p[index])) T(t);
+        new(cxplatstd::addressof(_p[index])) T(t);
         ++m_numElements;
         return true;
     }
@@ -646,7 +734,7 @@ public:
         if (index < m_numElements)
             moveElements((ULONG)index, (ULONG)(index+1), (ULONG)(m_numElements - index));
 
-        new(wistd::addressof(_p[index])) T(wistd::move(t));
+        new(cxplatstd::addressof(_p[index])) T(cxplatstd::move(t));
         ++m_numElements;
         return true;
     }
@@ -670,11 +758,11 @@ public:
         {
             if (!lessThanPredicate(_p[i], t))
             {
-                return insertAt(i, wistd::move(t));
+                return insertAt(i, cxplatstd::move(t));
             }
         }
 
-        return append(wistd::move(t));
+        return append(cxplatstd::move(t));
     }
 
     PAGED bool insertSortedUnique(T &t, bool (*lessThanPredicate)(T const&, T const&))
@@ -700,13 +788,13 @@ public:
             if (!lessThanPredicate(_p[i], t))
             {
                 if (lessThanPredicate(t, _p[i]))
-                    return insertAt(i, wistd::move(t));
+                    return insertAt(i, cxplatstd::move(t));
                 else
                     return true;
             }
         }
 
-        return append(wistd::move(t));
+        return append(cxplatstd::move(t));
     }
 
     PAGED void eraseAt(size_t index)
@@ -766,7 +854,7 @@ private:
     {
         if (_p)
         {
-            if constexpr(!wistd::is_trivially_destructible_v<T>)
+            if (!cxplatstd::is_trivially_destructible_v<T>)
             {
                 for (auto i = m_numElements; i > 0; i--)
                 {
@@ -787,7 +875,7 @@ private:
         {
             NOTHING;
         }
-        else if constexpr(__is_trivially_copyable(T))
+        else if (__is_trivially_copyable(T))
         {
             memmove(_p + to, _p + from, number * sizeof(T));
         }
@@ -800,13 +888,13 @@ private:
 
             for (i = to + number; i - 1 >= m_numElements; i--)
             {
-                new (wistd::addressof(_p[i - 1])) T(wistd::move(_p[i - delta - 1]));
+                new (cxplatstd::addressof(_p[i - 1])) T(cxplatstd::move(_p[i - delta - 1]));
             }
 
             for (NOTHING; i > to; i--)
             {
                 _p[i - 1].~T();
-                new (wistd::addressof(_p[i - 1])) T(wistd::move(_p[i - delta - 1]));
+                new (cxplatstd::addressof(_p[i - 1])) T(cxplatstd::move(_p[i - delta - 1]));
             }
 
             for (NOTHING; i > from; i--)
@@ -823,13 +911,13 @@ private:
 
             for (i = to; i < from; i++)
             {
-                new (wistd::addressof(_p[i])) T(wistd::move(_p[i + delta]));
+                new (cxplatstd::addressof(_p[i])) T(cxplatstd::move(_p[i + delta]));
             }
 
             for (NOTHING; i < to + number; i++)
             {
                 _p[i].~T();
-                new (wistd::addressof(_p[i])) T(wistd::move(_p[i + delta]));
+                new (cxplatstd::addressof(_p[i])) T(cxplatstd::move(_p[i + delta]));
             }
 
             for (NOTHING; i < from + number; i++)

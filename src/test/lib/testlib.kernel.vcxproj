@@ -25,6 +25,7 @@
     <ClCompile Include="ProcTest.cpp" />
     <ClCompile Include="ThreadTest.cpp" />
     <ClCompile Include="TimeTest.cpp" />
+    <ClCompile Include="KArrayTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />
@@ -84,13 +85,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;KERNEL_MODE=1;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;KERNEL_MODE=1;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
