@@ -44,9 +44,7 @@
 
 #include "TestAbstractionLayer.h"
 
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
-#include "karray.h"
-#endif
+#include "cxplatvector.h"
 
 #if defined(_ARM64_) || defined(_ARM64EC_)
 #pragma optimize("", off)

@@ -8,7 +8,7 @@ set(SOURCES
     ProcTest.cpp
     ThreadTest.cpp
     TimeTest.cpp
-    KArrayTest.cpp
+    VectorTest.cpp
 )
 
 add_library(testlib STATIC ${SOURCES})

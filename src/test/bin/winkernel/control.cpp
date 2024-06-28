@@ -504,8 +504,8 @@ CxPlatTestCtlEvtIoDeviceControl(
         CxPlatTestCtlRun(CxPlatTestThreadWaitTimeout());
         break;
 
-    case IOCTL_CXPLAT_RUN_KARRAY_BASIC:
-        CxPlatTestCtlRun(KArrayBasic());
+    case IOCTL_CXPLAT_RUN_VECTOR_BASIC:
+        CxPlatTestCtlRun(VectorBasic());
         break;
 
     default:

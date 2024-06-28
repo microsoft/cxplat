@@ -33,7 +33,7 @@ Notes:
 
 #include "cxplat.h"
 #include <new.h>
-#ifdef KERNEL_MODE
+#ifdef _KERNEL_MODE
 #include <ntintsafe.h>
 #else
 #include <intsafe.h>
@@ -130,7 +130,7 @@ constexpr bool is_trivially_destructible_v
 
 #define NOTHING
 
-#if defined(KERNEL_MODE)
+#if defined(_KERNEL_MODE)
 #define CODE_SEG(segment) __declspec(code_seg(segment))
 #else
 #define CODE_SEG(segment)
@@ -155,7 +155,7 @@ constexpr bool is_trivially_destructible_v
 // Use on code that must always be locked in memory, where you don't want SAL IRQL annotations.
 #define NONPAGEDX CODE_SEG(KRTL_NONPAGED_SEGMENT)
 
-#ifndef KERNEL_MODE
+#ifndef _KERNEL_MODE
 
 #ifndef PAGED_CODE
 #define PAGED_CODE() (void)0
@@ -165,7 +165,7 @@ constexpr bool is_trivially_destructible_v
 #define INIT_CODE() (void)0
 #endif // INIT_CODE
 
-#endif // KERNEL_MODE
+#endif // _KERNEL_MODE
 
 // Use on classes or structs.  Class member functions & compiler-generated code
 // will default to the PAGE segment.  You can override any member function with `NONPAGED`.
@@ -199,7 +199,7 @@ private:
 #endif
 };
 
-#ifndef KERNEL_MODE
+#ifndef _KERNEL_MODE
 
 DECLSPEC_NORETURN
 FORCEINLINE
@@ -281,7 +281,7 @@ PAGED void operator delete[](void *p, ULONG tag);
 PAGEDX void __cdecl operator delete[](void *p);
 void __cdecl operator delete(void *p);
 
-#ifndef KERNEL_MODE
+#ifndef _KERNEL_MODE
 inline
 PVOID
 ExAllocatePoolUninitialized(
@@ -315,7 +315,7 @@ ExFreePoolWithTag(
     ExFreePool(P);
 }
 
-#endif // KERNEL_MODE
+#endif // _KERNEL_MODE
 
 template <ULONG TAG, ULONG ARENA = PagedPool>
 struct KRTL_CLASS KALLOCATION_TAG

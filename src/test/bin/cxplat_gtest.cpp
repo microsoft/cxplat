@@ -179,16 +179,16 @@ TEST(ThreadSuite, WithTimeout) {
         CxPlatTestThreadWaitTimeout();
     }
 }
+#endif
 
 TEST(KArraySuite, Basic) {
-    TestLogger Logger("KArrayBasic");
+    TestLogger Logger("VectorBasic");
     if (TestingKernelMode) {
-        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_KARRAY_BASIC));
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_VECTOR_BASIC));
     } else {
-        KArrayBasic();
+        VectorBasic();
     }
 }
-#endif
 
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {

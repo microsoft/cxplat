@@ -56,7 +56,7 @@ void CxPlatTestProcBasic();
 void CxPlatTestThreadBasic();
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
 void CxPlatTestThreadWaitTimeout();
-void KArrayBasic();
+void VectorBasic();
 #endif
 
 //
@@ -93,9 +93,9 @@ LogTestFailure(
 static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 { 0x3a37b2cb, 0x39a6, 0x426a,{ 0xba, 0xf4, 0x77, 0xd0, 0xed, 0x00, 0x70, 0xb3 } };
 
-#ifndef KERNEL_MODE
+#ifndef _KERNEL_MODE
 #include <winioctl.h>
-#endif // KERNEL_MODE
+#endif // _KERNEL_MODE
 
 #define CXPLAT_CTL_CODE(request, method, access) \
     CTL_CODE(FILE_DEVICE_NETWORK, request, method, access)
@@ -134,7 +134,7 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 #define IOCTL_CXPLAT_RUN_THREAD_WAIT_TIMEOUT \
     CXPLAT_CTL_CODE(7, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-#define IOCTL_CXPLAT_RUN_KARRAY_BASIC \
+#define IOCTL_CXPLAT_RUN_VECTOR_BASIC \
     CXPLAT_CTL_CODE(8, METHOD_BUFFERED, FILE_WRITE_DATA)
 
 #define CXPLAT_MAX_IOCTL_FUNC_CODE 8
