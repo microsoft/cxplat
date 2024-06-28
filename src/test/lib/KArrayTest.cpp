@@ -11,6 +11,7 @@ Abstract:
 
 #include "precomp.h"
 
+#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
 void KArrayBasic()
 {
     Rtl::KArray<uint32_t> Array;
@@ -25,3 +26,4 @@ void KArrayBasic()
         TEST_EQUAL(Array[i], i);
     }
 }
+#endif
