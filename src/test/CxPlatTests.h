@@ -59,6 +59,11 @@ void CxPlatTestThreadWaitTimeout();
 #endif
 
 //
+// Vector Tests
+//
+void VectorBasic();
+
+//
 // Platform Specific Functions
 //
 
@@ -133,4 +138,7 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 #define IOCTL_CXPLAT_RUN_THREAD_WAIT_TIMEOUT \
     CXPLAT_CTL_CODE(7, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-#define CXPLAT_MAX_IOCTL_FUNC_CODE 7
+#define IOCTL_CXPLAT_RUN_VECTOR_BASIC \
+    CXPLAT_CTL_CODE(8, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+#define CXPLAT_MAX_IOCTL_FUNC_CODE 8

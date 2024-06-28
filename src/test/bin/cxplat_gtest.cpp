@@ -179,7 +179,17 @@ TEST(ThreadSuite, WithTimeout) {
         CxPlatTestThreadWaitTimeout();
     }
 }
+
 #endif
+
+TEST(VectorSuite, Basic) {
+    TestLogger Logger("VectorBasic");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_VECTOR_BASIC));
+    } else {
+        VectorBasic();
+    }
+}
 
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {

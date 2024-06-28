@@ -25,7 +25,6 @@
     <ClCompile Include="ProcTest.cpp" />
     <ClCompile Include="ThreadTest.cpp" />
     <ClCompile Include="TimeTest.cpp" />
-    <ClCompile Include="VectorTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.h" />
@@ -34,18 +33,14 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
     <TemplateGuid>{1dc1438e-ecb5-4f28-b53e-b9409525591b}</TemplateGuid>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-    <DriverType>KMDF</DriverType>
-    <UseInternalMSUniCrtPackage>true</UseInternalMSUniCrtPackage>
-    <UndockedKernelModeBuild>true</UndockedKernelModeBuild>
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <TargetVersion>Windows10</TargetVersion>
-    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
+    <PlatformToolset>WindowsApplicationForDrivers10.0</PlatformToolset>
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <_NT_TARGET_VERSION>0x0A00000A</_NT_TARGET_VERSION>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -61,8 +56,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <TargetName>testlib</TargetName>
-    <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\bin\</OutDir>
+    <IntDir>$(SolutionDir)build\windows\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)build\windows\$(Platform)_$(Configuration)\bin\</OutDir>
+    <OutDir>$(SolutionDir)build\windows\$(Platform)\obj\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)build\windows\$(Platform)\lib\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />
@@ -85,13 +82,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINUSER;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CX_PLATFORM_WINUSER;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
