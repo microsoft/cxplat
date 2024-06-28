@@ -179,7 +179,6 @@ TEST(ThreadSuite, WithTimeout) {
         CxPlatTestThreadWaitTimeout();
     }
 }
-#endif
 
 TEST(KArraySuite, Basic) {
     TestLogger Logger("VectorBasic");
@@ -189,6 +188,7 @@ TEST(KArraySuite, Basic) {
         VectorBasic();
     }
 }
+#endif
 
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {

@@ -11,6 +11,7 @@ Abstract:
 
 #include "precomp.h"
 
+#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
 void VectorBasic()
 {
     CxPlatVector<uint32_t> Array;
@@ -25,4 +26,4 @@ void VectorBasic()
         TEST_EQUAL(Array[i], i);
     }
 }
-
+#endif
