@@ -180,7 +180,9 @@ TEST(ThreadSuite, WithTimeout) {
     }
 }
 
-TEST(KArraySuite, Basic) {
+#endif
+
+TEST(VectorSuite, Basic) {
     TestLogger Logger("VectorBasic");
     if (TestingKernelMode) {
         ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_VECTOR_BASIC));
@@ -188,7 +190,6 @@ TEST(KArraySuite, Basic) {
         VectorBasic();
     }
 }
-#endif
 
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {

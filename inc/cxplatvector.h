@@ -1,8 +1,8 @@
 #pragma once
 
+#ifdef _KERNEL_MODE
 #include "karray.h"
 
-#ifdef _KERNEL_MODE
 template <typename T>
 class CxPlatVector : public Rtl::KArray<T>
 {
