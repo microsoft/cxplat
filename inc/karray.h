@@ -604,7 +604,7 @@ public:
             return false;
 
         size_t bytesNeeded;
-        if (!NT_SUCCESS(RtlSIZETMult(sizeof(T), count, reinterpret_cast<SIZE_T*>(&bytesNeeded))))
+        if (!NT_SUCCESS(RtlSIZETMult(sizeof(T), count, &bytesNeeded)))
             return false;
 
         T * p = (T*)ExAllocatePoolUninitialized(PoolType, bytesNeeded, 'rrAK');
