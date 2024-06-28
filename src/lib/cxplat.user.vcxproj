@@ -72,11 +72,9 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)submodules\cxplat\inc;$(SolutionDir)submodules\cxplat\src\inc;$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Platform)'=='x64'">/Gw /kernel /ZH:SHA_256 -d2jumptablerdata -d2epilogunwindrequirev2</AdditionalOptions>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -84,13 +82,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>CX_PLATFORM_WINUSER;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>CX_PLATFORM_WINUSER;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
