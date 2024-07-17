@@ -34,5 +34,21 @@ class CxPlatVector : public Rtl::KArray<T>
 #include <vector>
 
 template <typename T>
-using CxPlatVector = std::vector<T>;
+class CxPlatVector : public std::vector<T>
+{
+    public:
+    bool
+    push_back(
+        _In_ T value
+        )
+    {
+        try {
+            std::vector<T>::push_back(value);
+        } catch (...) {
+            return false;
+        }
+        return true;
+    }
+};
+
 #endif

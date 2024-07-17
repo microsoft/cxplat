@@ -16,7 +16,7 @@ void VectorBasic()
     CxPlatVector<uint32_t> Array;
 
     for (uint32_t i = 0; i < 10; i++) {
-        Array.push_back(i);
+        TEST_EQUAL(Array.push_back(i), true);
     }
 
     TEST_EQUAL(Array.size(), 10u);
