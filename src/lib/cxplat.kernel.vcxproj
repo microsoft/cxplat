@@ -38,7 +38,9 @@
   <PropertyGroup>
     <TargetName>cxplat</TargetName>
     <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)artifacts\bin\$(WinPlat)$(WinConfig)\winkernel\</OutDir>
+    <OutDir Condition="'$(SolutionName)' == 'cxplat.kernel'">$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</OutDir>
+    <!-- Output path when built as a dependency -->
+    <OutDir Condition="'$(SolutionName)' != 'cxplat.kernel'">$(SolutionDir)artifacts\bin\$(WinPlat)$(WinConfig)\cxplat\winkernel\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />

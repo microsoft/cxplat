@@ -18,7 +18,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup>
-    <!-- Configuration properties to match Windows -->
+    <!-- Configuration properties to match Windows. These are used when built as a dependency. -->
     <WinConfig Condition="'$(Configuration)' == 'Release'">fre</WinConfig>
     <WinConfig Condition="'$(Configuration)' == 'Debug'">chk</WinConfig>
     <WinPlat Condition="'$(Platform)' == 'Win32'">x86</WinPlat>
