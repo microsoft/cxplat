@@ -7,6 +7,8 @@ template <typename T>
 class CxPlatVector : public Rtl::KArray<T>
 {
     public:
+    using Rtl::KArray<T>::KArray;
+
     bool
     push_back(
         _In_ T value
