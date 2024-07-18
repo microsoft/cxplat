@@ -37,6 +37,9 @@ void VectorBasic()
         TEST_EQUAL(Array[i - 1], i);
     }
 
-    CxPlatVector<uint32_t> ArrayWithSizeHint(10);
-    TEST_EQUAL(ArrayWithSizeHint.size(), 10u);
+    CxPlatVector<uint32_t> ArrayFill(10);
+    TEST_EQUAL(ArrayFill.size(), 10u);
+    ArrayFill.push_back(10);
+    TEST_EQUAL(ArrayFill.size(), 11u);
+    TEST_EQUAL(ArrayFill[10], 10u);
 }
