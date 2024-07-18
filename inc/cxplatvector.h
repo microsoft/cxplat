@@ -53,7 +53,9 @@ class CxPlatVector : public std::vector<T>
     }
 
     void
-    eraseAt(size_t index)
+    eraseAt(
+        _In_ size_t index
+        )
     {
         std::vector<T>::erase(std::vector<T>::begin() + index);
     }
