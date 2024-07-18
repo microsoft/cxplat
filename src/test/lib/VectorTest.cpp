@@ -38,4 +38,5 @@ void VectorBasic()
     }
 
     CxPlatVector<uint32_t> ArrayWithSizeHint(10);
+    TEST_EQUAL(ArrayWithSizeHint.size(), 10u);
 }

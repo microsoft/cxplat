@@ -539,13 +539,14 @@ public:
         PAGED T *operator->() const { return &(*this->_a)[this->_i]; }
     };
 
-    PAGED KArray(size_t sizeHint = 0, const T &value = (T)0) noexcept
+    PAGED KArray(size_t count = 0, const T &value = (T)0) noexcept
     {
-        if (sizeHint)
+        if (count)
         {
-            (void)grow(sizeHint);
-            for (ULONG i = 0; i < m_numElements; i++)
+            (void)grow(count);
+            for (ULONG i = 0; i < count; i++)
                 _p[i] = value;
+            m_numElements = static_cast<ULONG>(count);
         }
     }
 
