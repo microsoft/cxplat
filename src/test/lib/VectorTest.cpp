@@ -39,6 +39,8 @@ void VectorBasic()
 
     CxPlatVector<uint32_t> ArrayFill(10);
     TEST_EQUAL(ArrayFill.size(), 10u);
+
+    // Verify that the newly appended element will be inserted at 10-th slot.
     ArrayFill.push_back(10);
     TEST_EQUAL(ArrayFill.size(), 11u);
     TEST_EQUAL(ArrayFill[10], 10u);
