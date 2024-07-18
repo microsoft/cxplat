@@ -37,6 +37,8 @@ template <typename T>
 class CxPlatVector : public std::vector<T>
 {
     public:
+    using std::vector<T>::vector;
+
     bool
     push_back(
         _In_ T value
@@ -48,6 +50,12 @@ class CxPlatVector : public std::vector<T>
             return false;
         }
         return true;
+    }
+
+    void
+    eraseAt(size_t index)
+    {
+        std::vector<T>::erase(std::vector<T>::begin() + index);
     }
 };
 
