@@ -24,4 +24,18 @@ void VectorBasic()
     for (uint32_t i = 0; i < 10; i++) {
         TEST_EQUAL(Array[i], i);
     }
+
+    Array.eraseAt(3);
+
+    TEST_EQUAL(Array.size(), 9u);
+
+    for (uint32_t i = 0; i < 3; i++) {
+        TEST_EQUAL(Array[i], i);
+    }
+
+    for (uint32_t i = 4; i < 10; i++) {
+        TEST_EQUAL(Array[i - 1], i);
+    }
+
+    CxPlatVector<uint32_t> ArrayWithSizeHint(10);
 }

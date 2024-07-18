@@ -7,6 +7,8 @@ template <typename T>
 class CxPlatVector : public Rtl::KArray<T>
 {
     public:
+    using Rtl::KArray<T>::KArray;
+
     bool
     push_back(
         _In_ T value
@@ -37,6 +39,8 @@ template <typename T>
 class CxPlatVector : public std::vector<T>
 {
     public:
+    using std::vector<T>::vector;
+
     bool
     push_back(
         _In_ T value
@@ -48,6 +52,14 @@ class CxPlatVector : public std::vector<T>
             return false;
         }
         return true;
+    }
+
+    void
+    eraseAt(
+        _In_ size_t index
+        )
+    {
+        std::vector<T>::erase(std::vector<T>::begin() + index);
     }
 };
 
