@@ -170,6 +170,15 @@ TEST(ThreadSuite, Basic) {
     }
 }
 
+TEST(ThreadSuite, Async) {
+    TestLogger Logger("CxPlatTestThreadAsync");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_THREAD_ASYNC));
+    } else {
+        CxPlatTestThreadAsync();
+    }
+}
+
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
 TEST(ThreadSuite, WithTimeout) {
     TestLogger Logger("CxPlatTestThreadWaitTimeout");

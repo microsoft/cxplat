@@ -45,6 +45,7 @@
 #include "TestAbstractionLayer.h"
 
 #include "cxplatvector.h"
+#include "cxplat.hpp"
 
 #if defined(_ARM64_) || defined(_ARM64EC_)
 #pragma optimize("", off)
