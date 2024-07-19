@@ -9,6 +9,10 @@ Abstract:
 
 --*/
 
+#ifdef _WIN32
+#pragma once
+#endif
+
 #ifndef CXPLATCPP_H
 #define CXPLATCPP_H
 
