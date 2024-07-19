@@ -102,7 +102,7 @@ void CxPlatTestThreadAsync()
             return (void*)(intptr_t)(0xdeadbeaf);
         });
 
-        Async.WaitFor(50);
+        TEST_FALSE(Async.WaitFor(50));
         TEST_EQUAL(Async.Get(), nullptr);
         Async.Wait();
         TEST_NOT_EQUAL(Async.Get(), nullptr);

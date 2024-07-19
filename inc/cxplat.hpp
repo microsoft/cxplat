@@ -75,10 +75,13 @@ public:
     }
 
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
-    void WaitFor(uint32_t TimeoutMs) noexcept {
+    bool WaitFor(uint32_t TimeoutMs) noexcept {
         if (Initialized) {
-            CxPlatThreadWaitWithTimeout(&Thread, TimeoutMs);
+            if (CxPlatThreadWaitWithTimeout(&Thread, TimeoutMs)) {
+                return true;
+            }
         }
+        return false;
     }
 #endif
 
