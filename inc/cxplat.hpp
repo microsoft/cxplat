@@ -27,10 +27,9 @@ private:
         void* ReturnValue;
     };
 
-    static
-    CXPLAT_THREAD_CALLBACK(CxPlatAsyncWrapperCallback, Context)
+    static CXPLAT_THREAD_CALLBACK(CxPlatAsyncWrapperCallback, Context)
     {
-        struct CxPlatAsyncContext *AsyncContext = (struct CxPlatAsyncContext*)Context;
+        struct CxPlatAsyncContext* AsyncContext = (struct CxPlatAsyncContext*)Context;
         AsyncContext->ReturnValue = AsyncContext->UserCallback(AsyncContext->UserContext);
         CXPLAT_THREAD_RETURN(0);
     }
