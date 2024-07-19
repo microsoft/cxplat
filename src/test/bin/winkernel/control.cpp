@@ -366,6 +366,7 @@ size_t CXPLAT_IOCTL_BUFFER_SIZES[] =
     0,
     0,
     0,
+    0,
 };
 
 static_assert(
