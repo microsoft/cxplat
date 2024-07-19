@@ -38,10 +38,10 @@ private:
     CXPLAT_THREAD Thread {0};
     CXPLAT_THREAD_CONFIG ThreadConfig {0};
     struct CxPlatAsyncContext AsyncContext {0};
-    bool Initialized : 1;
-    bool WaitOnDelete : 1;
+    bool Initialized = false;
+    bool ThreadCompleted = false;
 public:
-    CxPlatAsync(CxPlatCallback Callback, void* UserContext = nullptr, bool WaitOnDelete = true) noexcept {
+    CxPlatAsync(CxPlatCallback Callback, void* UserContext = nullptr) noexcept {
         AsyncContext.UserContext = UserContext;
         AsyncContext.UserCallback = Callback;
         AsyncContext.ReturnValue = nullptr;
@@ -54,11 +54,10 @@ public:
             return;
         }
         Initialized = true;
-        this->WaitOnDelete = WaitOnDelete;
     }
     ~CxPlatAsync() noexcept {
         if (Initialized) {
-            if (WaitOnDelete) {
+            if (!ThreadCompleted) {
                 CxPlatThreadWaitForever(&Thread);
             }
             CxPlatThreadDelete(&Thread);
@@ -68,6 +67,7 @@ public:
     void Wait() noexcept {
         if (Initialized) {
             CxPlatThreadWaitForever(&Thread);
+            ThreadCompleted = true;
         }
     }
 
