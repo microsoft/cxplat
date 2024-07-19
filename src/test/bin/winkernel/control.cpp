@@ -366,6 +366,7 @@ size_t CXPLAT_IOCTL_BUFFER_SIZES[] =
     0,
     0,
     0,
+    0,
 };
 
 static_assert(
@@ -498,6 +499,10 @@ CxPlatTestCtlEvtIoDeviceControl(
 
     case IOCTL_CXPLAT_RUN_THREAD_BASIC:
         CxPlatTestCtlRun(CxPlatTestThreadBasic());
+        break;
+
+    case IOCTL_CXPLAT_RUN_THREAD_ASYNC:
+        CxPlatTestCtlRun(CxPlatTestThreadAsync());
         break;
 
     case IOCTL_CXPLAT_RUN_THREAD_WAIT_TIMEOUT:
