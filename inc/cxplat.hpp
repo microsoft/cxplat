@@ -5,7 +5,7 @@
 
 Abstract:
 
-    C++ header only cxplat wrappers 
+    C++ header only cxplat wrappers
 
 --*/
 
