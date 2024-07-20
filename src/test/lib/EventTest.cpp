@@ -39,3 +39,21 @@ void CxPlatTestEventBasic()
 
     CxPlatEventUninitialize(Event);
 }
+
+void CxPlatTestEventCpp()
+{
+    const uint32_t TimeoutMs = 100;
+
+    {
+        CxPlatEvent Event;
+        TEST_FALSE(Event.WaitTimeout(TimeoutMs));
+
+        Event.Reset();
+        Event.Set();
+        TEST_TRUE(Event.WaitTimeout(TimeoutMs));
+
+        Event.Reset();
+        Event.Set();
+        Event.WaitForever();
+    }
+}

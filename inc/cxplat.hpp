@@ -19,6 +19,20 @@ Abstract:
 #include "cxplat.h"
 #include "cxplat_sal_stub.h"
 
+struct CxPlatEvent {
+    CXPLAT_EVENT Handle;
+    CxPlatEvent() noexcept { CxPlatEventInitialize(&Handle, FALSE, FALSE); }
+    CxPlatEvent(bool ManualReset) noexcept { CxPlatEventInitialize(&Handle, ManualReset, FALSE); }
+    CxPlatEvent(CXPLAT_EVENT event) noexcept : Handle(event) { }
+    ~CxPlatEvent() noexcept { CxPlatEventUninitialize(Handle); }
+    CXPLAT_EVENT* operator &() noexcept { return &Handle; }
+    operator CXPLAT_EVENT() const noexcept { return Handle; }
+    void Set() { CxPlatEventSet(Handle); }
+    void Reset() { CxPlatEventReset(Handle); }
+    void WaitForever() { CxPlatEventWaitForever(Handle); }
+    bool WaitTimeout(uint32_t TimeoutMs) { return CxPlatEventWaitWithTimeout(Handle, TimeoutMs); }
+};
+
 template <typename T>
 class CxPlatAsyncT {
 private:
