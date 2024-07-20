@@ -19,21 +19,22 @@ Abstract:
 #include "cxplat.h"
 #include "cxplat_sal_stub.h"
 
-typedef void* CxPlatCallback(
-    _Inout_ void* Context
-);
-
-class CxPlatAsync {
+template <typename T, typename R>
+class CxPlatAsyncT {
 private:
+
+    typedef R CxPlatCallback(
+        _Inout_ T* Context
+    );
+
     struct CxPlatAsyncContext {
-        void* UserContext;
+        T* UserContext;
         CxPlatCallback *UserCallback;
-        void* ReturnValue;
+        R ReturnValue;
     };
 
-    static CXPLAT_THREAD_CALLBACK(CxPlatAsyncWrapperCallback, Context)
-    {
-        struct CxPlatAsyncContext* AsyncContext = (struct CxPlatAsyncContext*)Context;
+    static CXPLAT_THREAD_CALLBACK(CxPlatAsyncWrapperCallback, Context) {
+        auto AsyncContext = (CxPlatAsyncContext*)Context;
         AsyncContext->ReturnValue = AsyncContext->UserCallback(AsyncContext->UserContext);
         CXPLAT_THREAD_RETURN(0);
     }
@@ -44,10 +45,10 @@ private:
     bool Initialized = false;
     bool ThreadCompleted = false;
 public:
-    CxPlatAsync(CxPlatCallback Callback, void* UserContext = nullptr) noexcept {
+    CxPlatAsyncT(CxPlatCallback Callback, T* UserContext = nullptr) noexcept {
         AsyncContext.UserContext = UserContext;
         AsyncContext.UserCallback = Callback;
-        AsyncContext.ReturnValue = nullptr;
+        AsyncContext.ReturnValue = (R)0;
 
         ThreadConfig.Name = "CxPlatAsync";
         ThreadConfig.Callback = CxPlatAsyncWrapperCallback;
@@ -58,7 +59,7 @@ public:
         }
         Initialized = true;
     }
-    ~CxPlatAsync() noexcept {
+    ~CxPlatAsyncT() noexcept {
         if (Initialized) {
             if (!ThreadCompleted) {
                 CxPlatThreadWaitForever(&Thread);
@@ -85,9 +86,11 @@ public:
     }
 #endif
 
-    void* Get() noexcept {
+    R Get() noexcept {
         return AsyncContext.ReturnValue;
     }
 };
+
+typedef CxPlatAsyncT<void, void*> CxPlatAsync;
 
 #endif
