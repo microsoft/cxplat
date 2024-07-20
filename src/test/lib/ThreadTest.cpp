@@ -64,7 +64,7 @@ Failure:
 void CxPlatTestThreadAsync()
 {
     {
-        CxPlatAsync Async([](void*) -> void* {
+        CxPlatAsyncT<void,void*> Async([](void*) -> void* {
             return nullptr;
         });
     }
@@ -100,15 +100,15 @@ void CxPlatTestThreadAsync()
 
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
     {
-        CxPlatAsync Async([](void*) -> void* {
+        CxPlatAsyncT<void,intptr_t> Async([](void*) -> intptr_t {
             CxPlatSleep(2000);
-            return (void*)(intptr_t)(0xdeadbeaf);
+            return (intptr_t)(0xdeadbeaf);
         });
 
         TEST_FALSE(Async.WaitFor(50));
-        TEST_EQUAL(Async.Get(), nullptr);
+        TEST_EQUAL(Async.Get(), 0);
         Async.Wait();
-        TEST_NOT_EQUAL(Async.Get(), nullptr);
+        TEST_NOT_EQUAL(Async.Get(), 0);
     }
 #endif
 }

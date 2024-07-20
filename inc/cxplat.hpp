@@ -22,27 +22,27 @@ Abstract:
 template <typename T, typename R = void>
 class CxPlatAsyncT {
 private:
-    typedef R CxPlatCallback(_Inout_ T* Context);
+    typedef R CallbackT(_Inout_ T* Context);
 
-    struct CxPlatAsyncContext {
+    struct ContextT {
         T* UserContext;
-        CxPlatCallback *UserCallback;
+        CallbackT *UserCallback;
         R ReturnValue;
     };
 
-    static CXPLAT_THREAD_CALLBACK(CxPlatAsyncWrapperCallback, Context) {
-        auto AsyncContext = (CxPlatAsyncContext*)Context;
+    static CXPLAT_THREAD_CALLBACK(ThreadCallback, Context) {
+        auto AsyncContext = (ContextT*)Context;
         AsyncContext->ReturnValue = AsyncContext->UserCallback(AsyncContext->UserContext);
         CXPLAT_THREAD_RETURN(0);
     }
 
-    struct CxPlatAsyncContext AsyncContext {0, 0, 0};
-    CXPLAT_THREAD_CONFIG ThreadConfig {0, 0, "CxPlatAsync", CxPlatAsyncWrapperCallback, &AsyncContext};
+    struct ContextT AsyncContext {0, 0, 0};
+    CXPLAT_THREAD_CONFIG ThreadConfig {0, 0, "CxPlatAsync", ThreadCallback, &AsyncContext};
     CXPLAT_THREAD Thread {0};
     bool ThreadCompleted {false};
     bool Initialized;
 public:
-    CxPlatAsyncT(CxPlatCallback Callback, T* UserContext = nullptr) noexcept
+    CxPlatAsyncT(CallbackT Callback, T* UserContext = nullptr) noexcept
         : AsyncContext({UserContext, Callback, 0}),
           Initialized(CxPlatThreadCreate(&ThreadConfig, &Thread) == 0) {
     }
@@ -79,26 +79,26 @@ public:
 template <typename T>
 class CxPlatAsyncT <T, void>{
 private:
-    typedef void CxPlatCallback(_Inout_ T* Context);
+    typedef void CallbackT(_Inout_ T* Context);
 
-    struct CxPlatAsyncContext {
+    struct ContextT {
         T* UserContext;
-        CxPlatCallback *UserCallback;
+        CallbackT *UserCallback;
     };
 
-    static CXPLAT_THREAD_CALLBACK(CxPlatAsyncWrapperCallback, Context) {
-        auto AsyncContext = (CxPlatAsyncContext*)Context;
+    static CXPLAT_THREAD_CALLBACK(ThreadCallback, Context) {
+        auto AsyncContext = (ContextT*)Context;
         AsyncContext->UserCallback(AsyncContext->UserContext);
         CXPLAT_THREAD_RETURN(0);
     }
 
-    struct CxPlatAsyncContext AsyncContext {0, 0};
-    CXPLAT_THREAD_CONFIG ThreadConfig {0, 0, "CxPlatAsync", CxPlatAsyncWrapperCallback, &AsyncContext};
+    struct ContextT AsyncContext {0, 0};
+    CXPLAT_THREAD_CONFIG ThreadConfig {0, 0, "CxPlatAsync", ThreadCallback, &AsyncContext};
     CXPLAT_THREAD Thread {0};
     bool ThreadCompleted {false};
     bool Initialized;
 public:
-    CxPlatAsyncT(CxPlatCallback Callback, T* UserContext = nullptr) noexcept
+    CxPlatAsyncT(CallbackT Callback, T* UserContext = nullptr) noexcept
         : AsyncContext({UserContext, Callback}),
           Initialized(CxPlatThreadCreate(&ThreadConfig, &Thread) == 0) {
     }
@@ -127,7 +127,5 @@ public:
     }
 #endif
 };
-
-typedef CxPlatAsyncT<void, void*> CxPlatAsync;
 
 #endif
