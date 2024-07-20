@@ -37,6 +37,19 @@ void CxPlatTestLockBasic()
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
     }
+
+#if defined(CX_PLATFORM_WINKERNEL)
+    {
+        CxPlatLockDispatch Lock;
+        CXPLAT_RAISE_IRQL();
+        Lock.Acquire();
+        TEST_TRUE(CXPLAT_AT_DISPATCH());
+        Lock.Release();
+        TEST_TRUE(CXPLAT_AT_DISPATCH());
+        CXPLAT_LOWER_IRQL();
+        TEST_FALSE(CXPLAT_AT_DISPATCH());
+    }
+#endif
 }
 
 void CxPlatTestLockReadWrite()
@@ -51,7 +64,7 @@ void CxPlatTestLockReadWrite()
 #if defined(CX_PLATFORM_WINKERNEL)
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
-        Lock.AcquireExclusive();
+        Lock.ReleaseShared();
     }
 
     {
@@ -60,9 +73,22 @@ void CxPlatTestLockReadWrite()
 #if defined(CX_PLATFORM_WINKERNEL)
         TEST_TRUE(CXPLAT_AT_DISPATCH());
 #endif
-        Lock.AcquireExclusive();
+        Lock.ReleaseShared();
 #if defined(CX_PLATFORM_WINKERNEL)
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
     }
+
+#if defined(CX_PLATFORM_WINKERNEL)
+    {
+        CxPlatLockDispatch Lock;
+        CXPLAT_RAISE_IRQL();
+        Lock.AcquireShared();
+        TEST_TRUE(CXPLAT_AT_DISPATCH());
+        Lock.ReleaseShared();
+        TEST_TRUE(CXPLAT_AT_DISPATCH());
+        CXPLAT_LOWER_IRQL();
+        TEST_FALSE(CXPLAT_AT_DISPATCH());
+    }
+#endif
 }
