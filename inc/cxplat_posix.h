@@ -158,7 +158,7 @@ typedef struct CXPLAT_LOCK {
     CXPLAT_FRE_ASSERT(pthread_mutexattr_destroy(&Attr) == 0); \
 }
 #define CxPlatLockUninitialize(Lock) \
-        CXPLAT_FRE_ASSERT(pthread_mutex_destroy(&(Lock)->Mutex) == 0)
+    CXPLAT_FRE_ASSERT(pthread_mutex_destroy(&(Lock)->Mutex) == 0)
 #define CxPlatLockAcquire(Lock) \
     CXPLAT_FRE_ASSERT(pthread_mutex_lock(&(Lock)->Mutex) == 0)
 #define CxPlatLockRelease(Lock) \
