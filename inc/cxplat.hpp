@@ -63,8 +63,6 @@ struct CxPlatEvent {
     CxPlatEvent() noexcept { CxPlatEventInitialize(&Handle, FALSE, FALSE); }
     CxPlatEvent(bool ManualReset) noexcept { CxPlatEventInitialize(&Handle, ManualReset, FALSE); }
     CxPlatEvent(CXPLAT_EVENT event) noexcept : Handle(event) { }
-    ~CxPlatEvent() noexcept { CxPlatEventUninitialize(Handle); }
-    CXPLAT_EVENT* operator &() noexcept { return &Handle; }
     operator CXPLAT_EVENT() const noexcept { return Handle; }
     void Set() { CxPlatEventSet(Handle); }
     void Reset() { CxPlatEventReset(Handle); }

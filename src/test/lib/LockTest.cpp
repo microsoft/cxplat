@@ -50,6 +50,24 @@ void CxPlatTestLockBasic()
         TEST_FALSE(CXPLAT_AT_DISPATCH());
     }
 #endif
+
+    {
+        CxPlatEvent Event;
+        CxPlatLock Lock;
+        struct Context {
+            CxPlatEvent* Event;
+            CxPlatLock* Lock;
+        } Ctx = { &Event, &Lock };
+        Lock.Acquire();
+        CxPlatAsyncT<Context> Async([](Context* Ctx) {
+            Ctx->Lock->Acquire();
+            Ctx->Event->Set();
+            Ctx->Lock->Release();
+        }, &Ctx);
+        TEST_FALSE(Event.WaitTimeout(500));
+        Lock.Release();
+        TEST_TRUE(Event.WaitTimeout(2000));
+    }
 }
 
 void CxPlatTestLockReadWrite()
