@@ -70,12 +70,17 @@ void CxPlatTestThreadAsync()
     }
 
     {
+        CxPlatAsyncT<void> Async([](void*) -> void {
+            // no-op
+        });
+    }
+
+    {
         struct TempCtx {
             uint32_t Value;
         } Ctx = { 0 };
-        CxPlatAsyncT<TempCtx,void*> Async([](TempCtx* Ctx) -> void* {
+        CxPlatAsyncT<TempCtx> Async([](TempCtx* Ctx) -> void {
             Ctx->Value = 123;
-            return nullptr;
         }, &Ctx);
         Async.Wait();
         TEST_EQUAL(123, Ctx.Value);
