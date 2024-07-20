@@ -61,7 +61,7 @@ jobs:
           { config: "Debug", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
           { config: "Release", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
           { config: "Debug", plat: "linux", os: "ubuntu-22.04", arch: "x64" },
-          { config: "Release", plat: "linux", os: "ubuntu-22.04", arch: "x64" }
+          { config: "Release", plat: "linux", os: "ubuntu-22.04", arch: "x64" },
           { config: "Debug", plat: "linux", os: "ubuntu-24.04", arch: "x64" },
           { config: "Release", plat: "linux", os: "ubuntu-24.04", arch: "x64" }
         ]
