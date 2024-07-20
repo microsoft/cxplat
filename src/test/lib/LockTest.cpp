@@ -81,7 +81,7 @@ void CxPlatTestLockReadWrite()
 
 #if defined(CX_PLATFORM_WINKERNEL)
     {
-        CxPlatLockDispatch Lock;
+        CxPlatRwLockDispatch Lock;
         CXPLAT_RAISE_IRQL();
         Lock.AcquireShared();
         TEST_TRUE(CXPLAT_AT_DISPATCH());
