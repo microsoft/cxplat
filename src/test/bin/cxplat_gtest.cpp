@@ -152,6 +152,15 @@ TEST(EventSuite, Basic) {
     }
 }
 
+TEST(EventSuite, Cpp) {
+    TestLogger Logger("CxPlatTestEventCpp");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_EVENT_CPP));
+    } else {
+        CxPlatTestEventCpp();
+    }
+}
+
 TEST(ProcSuite, Basic) {
     TestLogger Logger("CxPlatTestProcBasic");
     if (TestingKernelMode) {
