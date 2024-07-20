@@ -65,6 +65,12 @@ void CxPlatTestThreadWaitTimeout();
 void VectorBasic();
 
 //
+// Lock Tests
+//
+void CxPlatTestLockBasic();
+void CxPlatTestLockReadWrite();
+
+//
 // Platform Specific Functions
 //
 
@@ -145,4 +151,10 @@ static const GUID CXPLAT_TEST_DEVICE_INSTANCE =
 #define IOCTL_CXPLAT_RUN_THREAD_ASYNC \
     CXPLAT_CTL_CODE(9, METHOD_BUFFERED, FILE_WRITE_DATA)
 
-#define CXPLAT_MAX_IOCTL_FUNC_CODE 9
+#define IOCTL_CXPLAT_RUN_LOCK_BASIC \
+    CXPLAT_CTL_CODE(10, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+#define IOCTL_CXPLAT_RUN_LOCK_READ_WRITE \
+    CXPLAT_CTL_CODE(11, METHOD_BUFFERED, FILE_WRITE_DATA)
+
+#define CXPLAT_MAX_IOCTL_FUNC_CODE 11

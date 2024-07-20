@@ -200,6 +200,24 @@ TEST(VectorSuite, Basic) {
     }
 }
 
+TEST(LockSuite, Basic) {
+    TestLogger Logger("CxPlatTestLockBasic");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_LOCK_BASIC));
+    } else {
+        CxPlatTestLockBasic();
+    }
+}
+
+TEST(LockSuite, ReadWrite) {
+    TestLogger Logger("CxPlatTestLockReadWrite");
+    if (TestingKernelMode) {
+        ASSERT_TRUE(DriverClient.Run(IOCTL_CXPLAT_RUN_LOCK_READ_WRITE));
+    } else {
+        CxPlatTestLockReadWrite();
+    }
+}
+
 int main(int argc, char** argv) {
     for (int i = 0; i < argc; ++i) {
         if (strcmp("--kernel", argv[i]) == 0) {

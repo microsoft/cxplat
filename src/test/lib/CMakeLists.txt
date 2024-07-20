@@ -4,6 +4,7 @@
 set(SOURCES
     CryptTest.cpp
     EventTest.cpp
+    LockTest.cpp
     MemoryTest.cpp
     ProcTest.cpp
     ThreadTest.cpp

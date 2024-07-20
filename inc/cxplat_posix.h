@@ -135,6 +135,69 @@ CxPlatFree(
 #define CxPlatSecureZeroMemory CxPlatZeroMemory // TODO - Something better?
 
 //
+// Interrupt ReQuest Level
+//
+
+#define CXPLAT_IRQL() 0
+#define CXPLAT_PASSIVE_CODE()
+#define CXPLAT_AT_DISPATCH() FALSE
+
+//
+// Locking interfaces
+//
+
+typedef struct CXPLAT_LOCK {
+    alignas(16) pthread_mutex_t Mutex;
+} CXPLAT_LOCK;
+
+#define CxPlatLockInitialize(Lock) { \
+    pthread_mutexattr_t Attr; \
+    CXPLAT_FRE_ASSERT(pthread_mutexattr_init(&Attr) == 0); \
+    CXPLAT_FRE_ASSERT(pthread_mutexattr_settype(&Attr, PTHREAD_MUTEX_RECURSIVE) == 0); \
+    CXPLAT_FRE_ASSERT(pthread_mutex_init(&(Lock)->Mutex, &Attr) == 0); \
+    CXPLAT_FRE_ASSERT(pthread_mutexattr_destroy(&Attr) == 0); \
+}
+#define CxPlatLockUninitialize(Lock) \
+        CXPLAT_FRE_ASSERT(pthread_mutex_destroy(&(Lock)->Mutex) == 0)
+#define CxPlatLockAcquire(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_mutex_lock(&(Lock)->Mutex) == 0)
+#define CxPlatLockRelease(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_mutex_unlock(&(Lock)->Mutex) == 0)
+
+typedef CXPLAT_LOCK CXPLAT_DISPATCH_LOCK;
+
+#define CxPlatDispatchLockInitialize CxPlatLockInitialize
+#define CxPlatDispatchLockUninitialize CxPlatLockUninitialize
+#define CxPlatDispatchLockAcquire CxPlatLockAcquire
+#define CxPlatDispatchLockRelease CxPlatLockRelease
+
+typedef struct CXPLAT_RW_LOCK {
+    pthread_rwlock_t RwLock;
+} CXPLAT_RW_LOCK;
+
+#define CxPlatRwLockInitialize(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_rwlock_init(&(Lock)->RwLock, NULL) == 0)
+#define CxPlatRwLockUninitialize(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_rwlock_destroy(&(Lock)->RwLock) == 0)
+#define CxPlatRwLockAcquireShared(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_rwlock_rdlock(&(Lock)->RwLock) == 0)
+#define CxPlatRwLockAcquireExclusive(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_rwlock_wrlock(&(Lock)->RwLock) == 0)
+#define CxPlatRwLockReleaseShared(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_rwlock_unlock(&(Lock)->RwLock) == 0)
+#define CxPlatRwLockReleaseExclusive(Lock) \
+    CXPLAT_FRE_ASSERT(pthread_rwlock_unlock(&(Lock)->RwLock) == 0)
+
+typedef CXPLAT_RW_LOCK CXPLAT_DISPATCH_RW_LOCK;
+
+#define CxPlatDispatchRwLockInitialize CxPlatRwLockInitialize
+#define CxPlatDispatchRwLockUninitialize CxPlatRwLockUninitialize
+#define CxPlatDispatchRwLockAcquireShared CxPlatRwLockAcquireShared
+#define CxPlatDispatchRwLockAcquireExclusive CxPlatRwLockAcquireExclusive
+#define CxPlatDispatchRwLockReleaseShared CxPlatRwLockReleaseShared
+#define CxPlatDispatchRwLockReleaseExclusive CxPlatRwLockReleaseExclusive
+
+//
 // Time Measurement Interfaces
 //
 
