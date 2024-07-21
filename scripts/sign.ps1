@@ -54,9 +54,19 @@ function Get-WindowsKitTool {
 $SignToolPath = Get-WindowsKitTool -Tool "signtool.exe"
 if (!(Test-Path $SignToolPath)) { Write-Error "$SignToolPath does not exist!" }
 
+# Convert to Windows format
+if (($Arch -eq "x64")) {
+    $Arch = "amd64"
+}
+if ($Config -eq "Debug") {
+    $Config = "chk"
+} else {
+    $Config = "fre"
+}
+
 # Artifact paths.
 $RootDir = (Split-Path $PSScriptRoot -Parent)
-$ArtifactsDir = Join-Path $RootDir "artifacts\bin\winkernel\$($Arch)_$($Config)"
+$ArtifactsDir = Join-Path $RootDir "artifacts\bin\$($Arch)$($Config)"
 
 # Signing certificate path.
 $CertPath = Join-Path $RootDir "artifacts\corenet-ci-main\vm-setup\CoreNetSign.pfx"
