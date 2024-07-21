@@ -13,11 +13,11 @@ This signs and packages the drivers.
 
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("x86", "x64", "arm", "arm64")]
+    [ValidateSet("x86", "x64", "amd64", "arm", "arm64")]
     [string]$Arch = "x64",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Debug", "Release")]
+    [ValidateSet("Debug", "chk", "Release", "fre")]
     [string]$Config = "Release"
 )
 
@@ -60,7 +60,8 @@ if (($Arch -eq "x64")) {
 }
 if ($Config -eq "Debug") {
     $Config = "chk"
-} else {
+}
+if ($Config -eq "Release") {
     $Config = "fre"
 }
 
