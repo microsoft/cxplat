@@ -23,9 +23,8 @@ public:
         if (TestingKernelMode) {
             printf("Initializing for Kernel Mode tests\n");
             const char* DriverName = CXPLAT_DRIVER_NAME;
-            const char* DependentDriverNames = NULL;
-            ASSERT_TRUE(DriverService.Initialize(DriverName, DependentDriverNames));
-            ASSERT_TRUE(DriverService.Start());
+            ASSERT_EQ(0, DriverService.Initialize(DriverName, nullptr));
+            ASSERT_EQ(0, DriverService.Start());
             ASSERT_TRUE(DriverClient.Initialize(DriverName));
         } else {
             printf("Initializing for User Mode tests\n");

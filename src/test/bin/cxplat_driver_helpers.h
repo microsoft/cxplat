@@ -26,7 +26,7 @@ public:
         ScmHandle(nullptr),
         ServiceHandle(nullptr) {
     }
-    bool Initialize(
+    uint32_t Initialize(
         _In_z_ const char* DriverName,
         _In_z_ const char* DependentFileNames
         ) {
@@ -38,7 +38,7 @@ public:
                 "[ lib] ERROR, %u, %s.",
                 Error,
                 "GetFullPathName failed");
-            return false;
+            return (uint32_t)Error;
         }
     QueryService:
         ServiceHandle =
@@ -58,7 +58,7 @@ public:
                 CxPlatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to get currently executing module path");
-                return false;
+                return (uint32_t)Error;
             }
             PathEnd++;
             size_t RemainingLength = sizeof(DriverFilePath) - (PathEnd - DriverFilePath);
@@ -72,13 +72,13 @@ public:
                 CxPlatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to create driver on disk file path");
-                return false;
+                return (uint32_t)Error;
             }
             if (GetFileAttributesA(DriverFilePath) == INVALID_FILE_ATTRIBUTES) {
                 CxPlatTraceEvent(
                     "[ lib] ERROR, %s.",
                     "Failed to find driver on disk");
-                return false;
+                return (uint32_t)Error;
             }
             ServiceHandle =
                 CreateServiceA(
@@ -104,10 +104,10 @@ public:
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "CreateService failed");
-                return false;
+                return (uint32_t)Error;
             }
         }
-        return true;
+        return 0;
     }
     void Uninitialize() {
         if (ServiceHandle != nullptr) {
@@ -117,7 +117,7 @@ public:
             CloseServiceHandle(ScmHandle);
         }
     }
-    bool Start() {
+    uint32_t Start() {
         if (!StartServiceA(ServiceHandle, 0, nullptr)) {
             unsigned long Error = GetLastError();
             if (Error != ERROR_SERVICE_ALREADY_RUNNING) {
@@ -125,10 +125,10 @@ public:
                     "[ lib] ERROR, %u, %s.",
                     Error,
                     "StartService failed");
-                return false;
+                return (uint32_t)Error;
             }
         }
-        return true;
+        return 0;
     }
 };
 
