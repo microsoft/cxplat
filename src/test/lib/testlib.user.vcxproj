@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|ARM64">
-      <Configuration>Debug</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM64">
-      <Configuration>Release</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
+  <PropertyGroup>
+    <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
+    <TargetName>testlib</TargetName>
+    <UndockedType>lib</UndockedType>
+    <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
+    <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
+    <UndockedSourceLink>true</UndockedSourceLink>
+  </PropertyGroup>
+  <Import Project="$(UndockedDir)vs\windows.undocked.props" />
   <ItemGroup>
+    <ClInclude Include="precomp.h" />
+    <ClInclude Include="..\CxPlatTests.h" />
     <ClCompile Include="CryptTest.cpp" />
     <ClCompile Include="EventTest.cpp" />
     <ClCompile Include="LockTest.cpp" />
@@ -27,72 +20,19 @@
     <ClCompile Include="ThreadTest.cpp" />
     <ClCompile Include="TimeTest.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="precomp.h" />
-    <ClInclude Include="..\CxPlatTests.h" />
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
-    <TemplateGuid>{1dc1438e-ecb5-4f28-b53e-b9409525591b}</TemplateGuid>
-    <VCProjectVersion>16.0</VCProjectVersion>
-    <Keyword>Win32Proj</Keyword>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration">
-    <TargetVersion>Windows10</TargetVersion>
-    <PlatformToolset>WindowsApplicationForDrivers10.0</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <TargetName>testlib</TargetName>
-    <IntDir>$(SolutionDir)build\windows\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)build\windows\$(Platform)_$(Configuration)\bin\</OutDir>
-    <OutDir>$(SolutionDir)build\windows\$(Platform)\obj\$(Configuration)\</OutDir>
-    <OutDir>$(SolutionDir)build\windows\$(Platform)\lib\$(Configuration)\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ExternalIncludePath />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(ONEBRANCH_BUILD)' != ''">
-    <ApiValidator_Enable>false</ApiValidator_Enable>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;$(SolutionDir)inc;$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\inc;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Platform)'=='x64'">/Gw /kernel /ZH:SHA_256 -d2jumptablerdata -d2epilogunwindrequirev2</AdditionalOptions>
-    </ClCompile>
-    <Lib>
-      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINUSER;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>
+        $(SolutionDir)inc;
+        $(SolutionDir)\src\inc;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        SECURITY_KERNEL;
+        SECURITY_WIN32;
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <PreprocessorDefinitions>CX_PLATFORM_WINUSER;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <Import Project="$(UndockedDir)vs\windows.undocked.targets" />
 </Project>

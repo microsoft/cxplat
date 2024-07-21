@@ -31,6 +31,8 @@ Notes:
 
 #pragma once
 
+#pragma warning(disable:28170)  // The function * has been declared to be in a paged segment, but neither PAGED_CODE nor PAGED_CODE_LOCKED was found
+
 #include "cxplat.h"
 #include <new.h>
 #ifdef _KERNEL_MODE

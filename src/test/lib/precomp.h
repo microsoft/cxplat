@@ -5,11 +5,11 @@
 
 --*/
 
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
 #include <wdm.h>
-#elif defined(CX_PLATFORM_WINUSER)
+#elif _WIN32
 #include <windows.h>
-#elif defined(CX_PLATFORM_LINUX) || defined(CX_PLATFORM_DARWIN)
+#elif __linux__ || __APPLE__ || __FreeBSD__
 // For FreeBSD
 #if defined(__FreeBSD__)
 #include <sys/socket.h>

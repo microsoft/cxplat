@@ -346,10 +346,10 @@ CxPlatEventInitialize(
     CXPLAT_FRE_ASSERT(Result == 0);
     Result = pthread_condattr_init(&Attr);
     CXPLAT_FRE_ASSERT(Result == 0);
-#if defined(CX_PLATFORM_LINUX)
+#if __linux__
     Result = pthread_condattr_setclock(&Attr, CLOCK_MONOTONIC);
     CXPLAT_FRE_ASSERT(Result == 0);
-#endif // CX_PLATFORM_LINUX
+#endif // __linux__
     Result = pthread_cond_init(&Event->Cond, &Attr);
     CXPLAT_FRE_ASSERT(Result == 0);
     Result = pthread_condattr_destroy(&Attr);

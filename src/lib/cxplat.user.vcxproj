@@ -1,71 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\cxplat.props" />
+  <PropertyGroup>
+    <ProjectGuid>{702A7493-A6A4-4209-AB69-E1E4D1EB0FB7}</ProjectGuid>
+    <TargetName>platformuser</TargetName>
+    <UndockedType>lib</UndockedType>
+    <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
+    <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
+    <UndockedSourceLink>true</UndockedSourceLink>
+  </PropertyGroup>
+  <Import Project="$(UndockedDir)vs\windows.undocked.props" />
   <ItemGroup>
+    <ClInclude Include="cxplat_trace.h" />
+    <ClInclude Include="cxplat_winuser.h" />
     <ClCompile Include="cxplat_winuser.c" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="cxplat_winuser.h" />
-    <ClInclude Include="cxplat_trace.h" />
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{702A7493-A6A4-4209-AB69-E1E4D1EB0FB7}</ProjectGuid>
-    <TemplateGuid>{51DD2767-7364-4DD3-BB4A-FF3E45F75BB4}</TemplateGuid>
-    <VCProjectVersion>16.0</VCProjectVersion>
-    <Keyword>Win32Proj</Keyword>
-    <RootNamespace>platformuser</RootNamespace>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration">
-    <TargetVersion>Windows10</TargetVersion>
-    <PlatformToolset>WindowsApplicationForDrivers10.0</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <CXPLAT_VER_BUILD_ID Condition="'$(CXPLAT_VER_BUILD_ID)' == ''">0</CXPLAT_VER_BUILD_ID>
-    <CXPLAT_VER_SUFFIX Condition="'$(CXPLAT_VER_SUFFIX)' == ''">-private</CXPLAT_VER_SUFFIX>
-    <CXPLAT_VER_GIT_HASH Condition="'$(CXPLAT_VER_GIT_HASH)' == ''">0</CXPLAT_VER_GIT_HASH>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetName>cxplat</TargetName>
-    <IntDir>$(SolutionDir)build\winuser\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir Condition="'$(SolutionName)' == 'cxplat.winuser'">$(SolutionDir)artifacts\bin\winuser\$(Platform)_$(Configuration)\</OutDir>
-    <!-- Output path when built as a dependency -->
-    <OutDir Condition="'$(SolutionName)' != 'cxplat.winuser'">$(SolutionDir)artifacts\bin\$(WinPlat)$(WinConfig)\cxplat\winuser\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ExternalIncludePath />
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)submodules\cxplat\inc;$(SolutionDir)submodules\cxplat\src\inc;$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-    </ClCompile>
-    <Lib>
-      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINUSER;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>
+        $(SolutionDir)inc;
+        $(SolutionDir)\src\inc;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        SECURITY_KERNEL;
+        SECURITY_WIN32;
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINUSER;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <Import Project="$(UndockedDir)vs\windows.undocked.targets" />
 </Project>

@@ -188,7 +188,7 @@ TEST(ThreadSuite, Async) {
     }
 }
 
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+#if _WIN32
 TEST(ThreadSuite, WithTimeout) {
     TestLogger Logger("CxPlatTestThreadWaitTimeout");
     if (TestingKernelMode) {
@@ -197,8 +197,7 @@ TEST(ThreadSuite, WithTimeout) {
         CxPlatTestThreadWaitTimeout();
     }
 }
-
-#endif
+#endif // _WIN32
 
 TEST(VectorSuite, Basic) {
     TestLogger Logger("VectorBasic");

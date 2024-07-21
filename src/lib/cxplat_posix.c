@@ -107,14 +107,14 @@ CxPlatInitialize(
     CxPlatform.AllocCounter = 0;
 #endif
 
-#if defined(CX_PLATFORM_DARWIN)
+#if __linux__
+    CxPlatProcessorCount = (uint32_t)sysconf(_SC_NPROCESSORS_ONLN);
+#else
     //
     // arm64 macOS has no way to get the current proc, so treat as single core.
     // Intel macOS can return incorrect values for CPUID, so treat as single core.
     //
     CxPlatProcessorCount = 1;
-#else
-    CxPlatProcessorCount = (uint32_t)sysconf(_SC_NPROCESSORS_ONLN);
 #endif
 
 #ifdef CXPLAT_NUMA_AWARE
@@ -250,15 +250,15 @@ CxPlatGetAbsoluteTime(
 
     CxPlatZeroMemory(Time, sizeof(struct timespec));
 
-#if defined(CX_PLATFORM_LINUX)
+#if __linux__
     ErrorCode = clock_gettime(CLOCK_MONOTONIC, Time);
-#elif defined(CX_PLATFORM_DARWIN)
+#else
     //
     // timespec_get is used on darwin, as CLOCK_MONOTONIC isn't actually
     // monotonic according to our tests.
     //
     timespec_get(Time, TIME_UTC);
-#endif // CX_PLATFORM_DARWIN
+#endif
 
     CXPLAT_DBG_ASSERT(ErrorCode == 0);
     UNREFERENCED_PARAMETER(ErrorCode);
@@ -298,18 +298,18 @@ CxPlatProcCurrentNumber(
     void
     )
 {
-#if defined(CX_PLATFORM_LINUX)
+#if __linux__
     return (uint32_t)sched_getcpu() % CxPlatProcessorCount;
-#elif defined(CX_PLATFORM_DARWIN)
+#else
     //
     // arm64 macOS has no way to get the current proc, so treat as single core.
     // Intel macOS can return incorrect values for CPUID, so treat as single core.
     //
     return 0;
-#endif // CX_PLATFORM_DARWIN
+#endif
 }
 
-#if defined(CX_PLATFORM_LINUX)
+#if __linux__
 
 CXPLAT_STATUS
 CxPlatThreadCreate(
@@ -427,7 +427,7 @@ CxPlatThreadCreate(
     return Status;
 }
 
-#elif defined(CX_PLATFORM_DARWIN)
+#else
 
 CXPLAT_STATUS
 CxPlatThreadCreate(
@@ -471,7 +471,7 @@ CxPlatThreadCreate(
     return Status;
 }
 
-#endif // CX_PLATFORM
+#endif
 
 void
 CxPlatThreadDelete(
@@ -495,17 +495,13 @@ CxPlatCurThreadID(
     void
     )
 {
-
 // For FreeBSD
 #if defined(__FreeBSD__)
     return pthread_getthreadid_np();
-
-#elif defined(CX_PLATFORM_LINUX)
-
+#elif __linux__
     CXPLAT_STATIC_ASSERT(sizeof(pid_t) <= sizeof(CXPLAT_THREAD_ID), "PID size exceeds the expected size");
     return syscall(SYS_gettid);
-
-#elif defined(CX_PLATFORM_DARWIN)
+#else
     // cppcheck-suppress duplicateExpression
     CXPLAT_STATIC_ASSERT(sizeof(uint32_t) == sizeof(CXPLAT_THREAD_ID), "The cast depends on thread id being 32 bits");
     uint64_t Tid;
@@ -514,8 +510,7 @@ CxPlatCurThreadID(
     CXPLAT_DBG_ASSERT(Res == 0);
     CXPLAT_DBG_ASSERT(Tid <= UINT32_MAX);
     return (CXPLAT_THREAD_ID)Tid;
-
-#endif // CX_PLATFORM_DARWIN
+#endif
 }
 
 CXPLAT_STATUS

@@ -56,7 +56,7 @@ void CxPlatTestProcBasic();
 
 void CxPlatTestThreadBasic();
 void CxPlatTestThreadAsync();
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+#if _WIN32
 void CxPlatTestThreadWaitTimeout();
 #endif
 

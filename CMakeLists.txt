@@ -312,8 +312,6 @@ if(WIN32)
 
     endif()
 
-    list(APPEND CXPLAT_COMMON_DEFINES CX_PLATFORM_WINUSER)
-
     set(CXPLAT_C_FLAGS ${CXPLAT_COMMON_FLAGS})
     set(CXPLAT_CXX_FLAGS ${CXPLAT_COMMON_FLAGS} /EHsc /permissive-)
 
@@ -354,10 +352,7 @@ else() #!WIN32
 
     list(APPEND CXPLAT_COMMON_FLAGS -fms-extensions -fPIC)
     if (CX_PLATFORM STREQUAL "darwin")
-        list(APPEND CXPLAT_COMMON_DEFINES CX_PLATFORM_DARWIN)
         list(APPEND CXPLAT_COMMON_FLAGS -Wno-microsoft-anon-tag -Wno-tautological-constant-out-of-range-compare -Wmissing-field-initializers)
-    else()
-        list(APPEND CXPLAT_COMMON_DEFINES CX_PLATFORM_LINUX)
     endif()
 
     set(CXPLAT_C_FLAGS ${CXPLAT_COMMON_FLAGS})

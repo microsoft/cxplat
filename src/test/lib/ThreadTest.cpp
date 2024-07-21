@@ -88,7 +88,7 @@ void CxPlatTestThreadAsync()
         TEST_NOT_EQUAL(INITIAL_THREAD_ID_VALUE, ThreadId);
     }
 
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+#if _WIN32
     {
         intptr_t Ctx = 0;
         CxPlatAsyncT<intptr_t> Async([](intptr_t* Ctx) {
@@ -101,10 +101,10 @@ void CxPlatTestThreadAsync()
         Async.Wait();
         TEST_NOT_EQUAL(Ctx, 0);
     }
-#endif
+#endif // _WIN32
 }
 
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+#if _WIN32
 void CxPlatTestThreadWaitTimeout()
 {
     CXPLAT_THREAD Thread;
@@ -132,4 +132,4 @@ Failure:
 
     CxPlatThreadDelete(&Thread);
 }
-#endif
+#endif // _WIN32

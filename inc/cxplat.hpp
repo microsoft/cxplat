@@ -113,14 +113,14 @@ public:
         }
     }
 
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+#if _WIN32
     bool WaitFor(uint32_t TimeoutMs) noexcept {
         if (Initialized) {
             return (ThreadCompleted = CxPlatThreadWaitWithTimeout(&Thread, TimeoutMs));
         }
         return false;
     }
-#endif
+#endif // _WIN32
 };
 
 typedef CxPlatAsyncT<void> CxPlatAsync;
