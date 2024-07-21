@@ -126,6 +126,64 @@ CxPlatLogAssert(
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
+// Interrupt ReQuest Level
+//
+
+#define CXPLAT_IRQL() KeGetCurrentIrql()
+
+#define CXPLAT_PASSIVE_CODE() CXPLAT_DBG_ASSERT(CXPLAT_IRQL() == PASSIVE_LEVEL)
+#define CXPLAT_AT_DISPATCH() (CXPLAT_IRQL() == DISPATCH_LEVEL)
+
+#define CXPLAT_RAISE_IRQL() KIRQL OldIrql; KeRaiseIrql(DISPATCH_LEVEL, &OldIrql)
+#define CXPLAT_LOWER_IRQL() KeLowerIrql(OldIrql)
+
+//
+// Locking Interfaces
+//
+
+typedef EX_PUSH_LOCK CXPLAT_LOCK;
+
+#define CxPlatLockInitialize(Lock) ExInitializePushLock(Lock)
+#define CxPlatLockUninitialize(Lock)
+#define CxPlatLockAcquire(Lock) KeEnterCriticalRegion(); ExAcquirePushLockExclusive(Lock)
+#define CxPlatLockRelease(Lock) ExReleasePushLockExclusive(Lock); KeLeaveCriticalRegion()
+
+typedef struct CXPLAT_DISPATCH_LOCK {
+    KSPIN_LOCK SpinLock;
+    KIRQL PrevIrql;
+} CXPLAT_DISPATCH_LOCK;
+
+#define CxPlatDispatchLockInitialize(Lock) KeInitializeSpinLock(&(Lock)->SpinLock)
+#define CxPlatDispatchLockUninitialize(Lock)
+#if defined(_AMD64_) || defined(_ARM64_)
+#define CxPlatDispatchLockAcquire(Lock) (Lock)->PrevIrql = KeAcquireSpinLockRaiseToDpc(&(Lock)->SpinLock)
+#else
+#define CxPlatDispatchLockAcquire(Lock) KeAcquireSpinLock(&(Lock)->SpinLock, &(Lock)->PrevIrql)
+#endif
+#define CxPlatDispatchLockRelease(Lock) KeReleaseSpinLock(&(Lock)->SpinLock, (Lock)->PrevIrql)
+
+typedef EX_PUSH_LOCK CXPLAT_RW_LOCK;
+
+#define CxPlatRwLockInitialize(Lock) ExInitializePushLock(Lock)
+#define CxPlatRwLockUninitialize(Lock)
+#define CxPlatRwLockAcquireShared(Lock) KeEnterCriticalRegion(); ExAcquirePushLockShared(Lock)
+#define CxPlatRwLockAcquireExclusive(Lock) KeEnterCriticalRegion(); ExAcquirePushLockExclusive(Lock)
+#define CxPlatRwLockReleaseShared(Lock) ExReleasePushLockShared(Lock); KeLeaveCriticalRegion()
+#define CxPlatRwLockReleaseExclusive(Lock) ExReleasePushLockExclusive(Lock); KeLeaveCriticalRegion()
+
+typedef struct CXPLAT_DISPATCH_RW_LOCK {
+    EX_SPIN_LOCK SpinLock;
+    KIRQL PrevIrql;
+} CXPLAT_DISPATCH_RW_LOCK;
+
+#define CxPlatDispatchRwLockInitialize(Lock) (Lock)->SpinLock = 0
+#define CxPlatDispatchRwLockUninitialize(Lock)
+#define CxPlatDispatchRwLockAcquireShared(Lock) (Lock)->PrevIrql = ExAcquireSpinLockShared(&(Lock)->SpinLock)
+#define CxPlatDispatchRwLockAcquireExclusive(Lock) (Lock)->PrevIrql = ExAcquireSpinLockExclusive(&(Lock)->SpinLock)
+#define CxPlatDispatchRwLockReleaseShared(Lock) ExReleaseSpinLockShared(&(Lock)->SpinLock, (Lock)->PrevIrql)
+#define CxPlatDispatchRwLockReleaseExclusive(Lock) ExReleaseSpinLockExclusive(&(Lock)->SpinLock, (Lock)->PrevIrql)
+
+//
 // Time Measurement Interfaces
 //
 

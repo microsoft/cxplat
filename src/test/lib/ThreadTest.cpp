@@ -64,14 +64,14 @@ Failure:
 void CxPlatTestThreadAsync()
 {
     {
-        CxPlatAsync Async([](void*) -> void {
+        CxPlatAsync Async([](void*) {
             // no-op
         });
     }
 
     {
         uint32_t Ctx = 0;
-        CxPlatAsyncT<uint32_t> Async([](uint32_t* Ctx) -> void {
+        CxPlatAsyncT<uint32_t> Async([](uint32_t* Ctx) {
             *Ctx = 123;
         }, &Ctx);
         Async.Wait();
@@ -80,7 +80,7 @@ void CxPlatTestThreadAsync()
 
     {
         CXPLAT_THREAD_ID ThreadId = INITIAL_THREAD_ID_VALUE;
-        CxPlatAsyncT<CXPLAT_THREAD_ID> Async([](CXPLAT_THREAD_ID* Ctx) -> void {
+        CxPlatAsyncT<CXPLAT_THREAD_ID> Async([](CXPLAT_THREAD_ID* Ctx) {
             *Ctx = CxPlatCurThreadID();
         }, &ThreadId);
 
@@ -91,7 +91,7 @@ void CxPlatTestThreadAsync()
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
     {
         intptr_t Ctx = 0;
-        CxPlatAsyncT<intptr_t> Async([](intptr_t* Ctx) -> void {
+        CxPlatAsyncT<intptr_t> Async([](intptr_t* Ctx) {
             CxPlatSleep(2000);
             *Ctx = (intptr_t)(0xdeadbeaf);
         }, &Ctx);

@@ -153,6 +153,51 @@ CxPlatFree(
 #define CxPlatSecureZeroMemory RtlSecureZeroMemory
 
 //
+// Interrupt ReQuest Level
+//
+
+#define CXPLAT_IRQL() PASSIVE_LEVEL
+
+#define CXPLAT_PASSIVE_CODE() CXPLAT_DBG_ASSERT(CXPLAT_IRQL() == PASSIVE_LEVEL)
+#define CXPLAT_AT_DISPATCH() FALSE
+
+//
+// Locking interfaces
+//
+
+typedef CRITICAL_SECTION CXPLAT_LOCK;
+
+#define CxPlatLockInitialize(Lock) InitializeCriticalSection(Lock)
+#define CxPlatLockUninitialize(Lock) DeleteCriticalSection(Lock)
+#define CxPlatLockAcquire(Lock) EnterCriticalSection(Lock)
+#define CxPlatLockRelease(Lock) LeaveCriticalSection(Lock)
+
+typedef CRITICAL_SECTION CXPLAT_DISPATCH_LOCK;
+
+#define CxPlatDispatchLockInitialize(Lock) InitializeCriticalSection(Lock)
+#define CxPlatDispatchLockUninitialize(Lock) DeleteCriticalSection(Lock)
+#define CxPlatDispatchLockAcquire(Lock) EnterCriticalSection(Lock)
+#define CxPlatDispatchLockRelease(Lock) LeaveCriticalSection(Lock)
+
+typedef SRWLOCK CXPLAT_RW_LOCK;
+
+#define CxPlatRwLockInitialize(Lock) InitializeSRWLock(Lock)
+#define CxPlatRwLockUninitialize(Lock)
+#define CxPlatRwLockAcquireShared(Lock) AcquireSRWLockShared(Lock)
+#define CxPlatRwLockAcquireExclusive(Lock) AcquireSRWLockExclusive(Lock)
+#define CxPlatRwLockReleaseShared(Lock) ReleaseSRWLockShared(Lock)
+#define CxPlatRwLockReleaseExclusive(Lock) ReleaseSRWLockExclusive(Lock)
+
+typedef SRWLOCK CXPLAT_DISPATCH_RW_LOCK;
+
+#define CxPlatDispatchRwLockInitialize(Lock) InitializeSRWLock(Lock)
+#define CxPlatDispatchRwLockUninitialize(Lock)
+#define CxPlatDispatchRwLockAcquireShared(Lock) AcquireSRWLockShared(Lock)
+#define CxPlatDispatchRwLockAcquireExclusive(Lock) AcquireSRWLockExclusive(Lock)
+#define CxPlatDispatchRwLockReleaseShared(Lock) ReleaseSRWLockShared(Lock)
+#define CxPlatDispatchRwLockReleaseExclusive(Lock) ReleaseSRWLockExclusive(Lock)
+
+//
 // Time Measurement Interfaces
 //
 

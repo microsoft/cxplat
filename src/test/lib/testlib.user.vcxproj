@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="CryptTest.cpp" />
     <ClCompile Include="EventTest.cpp" />
+    <ClCompile Include="LockTest.cpp" />
     <ClCompile Include="MemoryTest.cpp" />
     <ClCompile Include="ProcTest.cpp" />
     <ClCompile Include="ThreadTest.cpp" />

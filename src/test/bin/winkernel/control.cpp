@@ -368,6 +368,8 @@ size_t CXPLAT_IOCTL_BUFFER_SIZES[] =
     0,
     0,
     0,
+    0,
+    0,
 };
 
 static_assert(
@@ -516,6 +518,14 @@ CxPlatTestCtlEvtIoDeviceControl(
 
     case IOCTL_CXPLAT_RUN_EVENT_CPP:
         CxPlatTestCtlRun(CxPlatTestEventCpp());
+        break;
+
+    case IOCTL_CXPLAT_RUN_LOCK_BASIC:
+        CxPlatTestCtlRun(CxPlatTestLockBasic());
+        break;
+
+    case IOCTL_CXPLAT_RUN_LOCK_READ_WRITE:
+        CxPlatTestCtlRun(CxPlatTestLockReadWrite());
         break;
 
     default:
