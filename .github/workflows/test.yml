@@ -61,7 +61,9 @@ jobs:
           { config: "Debug", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
           { config: "Release", plat: "linux", os: "ubuntu-20.04", arch: "x64" },
           { config: "Debug", plat: "linux", os: "ubuntu-22.04", arch: "x64" },
-          { config: "Release", plat: "linux", os: "ubuntu-22.04", arch: "x64" }
+          { config: "Release", plat: "linux", os: "ubuntu-22.04", arch: "x64" },
+          { config: "Debug", plat: "linux", os: "ubuntu-24.04", arch: "x64" },
+          { config: "Release", plat: "linux", os: "ubuntu-24.04", arch: "x64" }
         ]
     uses: ./.github/workflows/build-reuse-unix.yml
     with:
@@ -97,6 +99,8 @@ jobs:
           { config: "Release", plat: "linux",   os: "ubuntu-20.04", arch: "x64" },
           { config: "Debug",   plat: "linux",   os: "ubuntu-22.04", arch: "x64" },
           { config: "Release", plat: "linux",   os: "ubuntu-22.04", arch: "x64" },
+          { config: "Debug",   plat: "linux",   os: "ubuntu-24.04", arch: "x64" },
+          { config: "Release", plat: "linux",   os: "ubuntu-24.04", arch: "x64" },
           { config: "Debug",   plat: "windows", os: "windows-2019", arch: "x64" },
           { config: "Release", plat: "windows", os: "windows-2019", arch: "x64" },
           { config: "Debug",   plat: "windows", os: "windows-2022", arch: "x64" },
