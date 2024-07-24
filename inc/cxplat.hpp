@@ -28,7 +28,7 @@ struct CxPlatLock {
 };
 
 #pragma warning(push)
-#pragma warning(disable:C26110) // TODO - Fix SAL annotations for locks
+#pragma warning(disable:26110) // TODO - Fix SAL annotations for locks
 struct CxPlatRwLock {
     CXPLAT_RW_LOCK Handle;
     CxPlatRwLock() noexcept { CxPlatRwLockInitialize(&Handle); }
