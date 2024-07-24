@@ -41,6 +41,7 @@ struct CxPlatRwLock {
 #pragma warning(pop)
 
 #pragma warning(push)
+#pragma warning(disable:26110) // TODO - Fix SAL annotations for locks
 #pragma warning(disable:28167) // TODO - Fix SAL annotations for IRQL changes
 struct CxPlatLockDispatch {
     CXPLAT_DISPATCH_LOCK Handle;
