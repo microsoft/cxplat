@@ -4,7 +4,7 @@
     <ProjectGuid>{E680F075-FEE8-421B-A9F1-DAD0A1C537D3}</ProjectGuid>
     <TargetName>cxplat</TargetName>
     <UndockedType>drvlib</UndockedType>
-    <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
+    <UndockedDir>$(MSBuildThisFileDirectory)\..\..\submodules\undocked\</UndockedDir>
     <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
     <UndockedSourceLink>true</UndockedSourceLink>
   </PropertyGroup>

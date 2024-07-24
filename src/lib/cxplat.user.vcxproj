@@ -4,7 +4,7 @@
     <ProjectGuid>{702A7493-A6A4-4209-AB69-E1E4D1EB0FB7}</ProjectGuid>
     <TargetName>cxplat</TargetName>
     <UndockedType>lib</UndockedType>
-    <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
+    <UndockedDir>$(MSBuildThisFileDirectory)\..\..\submodules\undocked\</UndockedDir>
     <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
     <UndockedSourceLink>true</UndockedSourceLink>
   </PropertyGroup>

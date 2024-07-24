@@ -4,7 +4,7 @@
     <ProjectGuid>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</ProjectGuid>
     <TargetName>testlib</TargetName>
     <UndockedType>lib</UndockedType>
-    <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
+    <UndockedDir>$(MSBuildThisFileDirectory)\..\..\..\submodules\undocked\</UndockedDir>
     <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
     <UndockedSourceLink>true</UndockedSourceLink>
   </PropertyGroup>
