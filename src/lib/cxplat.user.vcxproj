@@ -17,8 +17,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>
-        $(SolutionDir)inc;
-        $(SolutionDir)\src\inc;
+        ..\inc;
+        ..\..\inc;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
       <PreprocessorDefinitions>
