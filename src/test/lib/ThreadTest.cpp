@@ -64,48 +64,47 @@ Failure:
 void CxPlatTestThreadAsync()
 {
     {
-        CxPlatAsync Async([](void*) -> void* {
-            return nullptr;
+        int Value = 8964;
+        CxPlatAsync Async([&]() {
+            Value = 123;
         });
+        Async.Wait();
+        TEST_EQUAL(123, Value);
     }
 
     {
         struct TempCtx {
             uint32_t Value;
         } TempCtx = { 0 };
-        CxPlatAsync Async([](void* Ctx) -> void* {
-            struct TempCtx* TempCtx = (struct TempCtx*)Ctx;
-            TempCtx->Value = 123;
-            return nullptr;
-        }, &TempCtx);
+        CxPlatAsync Async([&]() {
+            TempCtx.Value = 123;
+        });
         Async.Wait();
         TEST_EQUAL(123, TempCtx.Value);
     }   
 
     {
         CXPLAT_THREAD_ID ThreadId = INITIAL_THREAD_ID_VALUE;
-        CxPlatAsync Async([](void* Ctx) -> void* {
-            CXPLAT_THREAD_ID* ThreadId = (CXPLAT_THREAD_ID*)Ctx;
-            *ThreadId = CxPlatCurThreadID();
-            return (void*)(intptr_t)(*ThreadId);
-        }, &ThreadId);
+        CxPlatAsync Async([&]() {
+            ThreadId = CxPlatCurThreadID();
+        });
 
         Async.Wait();
-        TEST_EQUAL((CXPLAT_THREAD_ID)((intptr_t)Async.Get()), ThreadId);
         TEST_NOT_EQUAL(INITIAL_THREAD_ID_VALUE, ThreadId);
     }
 
 #if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
     {
-        CxPlatAsync Async([](void*) -> void* {
+        uint32_t Value = 0;
+        CxPlatAsync Async([&]() {
             CxPlatSleep(2000);   
-            return (void*)(intptr_t)(0xdeadbeaf);
+            Value = 0xdeadbeaf;
         });
 
         TEST_FALSE(Async.WaitFor(50));
-        TEST_EQUAL(Async.Get(), nullptr);
+        TEST_EQUAL(Value, 0);
         Async.Wait();
-        TEST_NOT_EQUAL(Async.Get(), nullptr);
+        TEST_EQUAL(Value, 0xdeadbeaf);
     }
 #endif
 }
