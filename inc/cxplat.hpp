@@ -27,6 +27,8 @@ struct CxPlatLock {
     void Release() noexcept { CxPlatLockRelease(&Handle); }
 };
 
+#pragma warning(push)
+#pragma warning(disable:C26110) // TODO - Fix SAL annotations for locks
 struct CxPlatRwLock {
     CXPLAT_RW_LOCK Handle;
     CxPlatRwLock() noexcept { CxPlatRwLockInitialize(&Handle); }
@@ -36,6 +38,7 @@ struct CxPlatRwLock {
     void ReleaseShared() noexcept { CxPlatRwLockReleaseShared(&Handle); }
     void ReleaseExclusive() noexcept { CxPlatRwLockReleaseExclusive(&Handle); }
 };
+#pragma warning(pop)
 
 #pragma warning(push)
 #pragma warning(disable:28167) // TODO - Fix SAL annotations for IRQL changes
