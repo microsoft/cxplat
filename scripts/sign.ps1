@@ -13,11 +13,11 @@ This signs and packages the drivers.
 
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("x86", "x64", "arm", "arm64")]
+    [ValidateSet("x86", "x64", "amd64", "arm", "arm64")]
     [string]$Arch = "x64",
 
     [Parameter(Mandatory = $false)]
-    [ValidateSet("Debug", "Release")]
+    [ValidateSet("Debug", "chk", "Release", "fre")]
     [string]$Config = "Release"
 )
 
@@ -54,9 +54,20 @@ function Get-WindowsKitTool {
 $SignToolPath = Get-WindowsKitTool -Tool "signtool.exe"
 if (!(Test-Path $SignToolPath)) { Write-Error "$SignToolPath does not exist!" }
 
+# Convert to Windows format
+if (($Arch -eq "x64")) {
+    $Arch = "amd64"
+}
+if ($Config -eq "Debug") {
+    $Config = "chk"
+}
+if ($Config -eq "Release") {
+    $Config = "fre"
+}
+
 # Artifact paths.
 $RootDir = (Split-Path $PSScriptRoot -Parent)
-$ArtifactsDir = Join-Path $RootDir "artifacts\bin\winkernel\$($Arch)_$($Config)"
+$ArtifactsDir = Join-Path $RootDir "artifacts\bin\$($Arch)$($Config)"
 
 # Signing certificate path.
 $CertPath = Join-Path $RootDir "artifacts\corenet-ci-main\vm-setup\CoreNetSign.pfx"

@@ -51,6 +51,7 @@ jobs:
       with:
         repository: microsoft/cxplat
         ref: ${{ inputs.ref }}
+        submodules: recursive
     - name: Prepare Machine
       shell: pwsh
       run: scripts/prepare-machine.ps1 -ForBuild

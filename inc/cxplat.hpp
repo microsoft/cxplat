@@ -27,6 +27,8 @@ struct CxPlatLock {
     void Release() noexcept { CxPlatLockRelease(&Handle); }
 };
 
+#pragma warning(push)
+#pragma warning(disable:26110) // TODO - Fix SAL annotations for locks
 struct CxPlatRwLock {
     CXPLAT_RW_LOCK Handle;
     CxPlatRwLock() noexcept { CxPlatRwLockInitialize(&Handle); }
@@ -36,8 +38,10 @@ struct CxPlatRwLock {
     void ReleaseShared() noexcept { CxPlatRwLockReleaseShared(&Handle); }
     void ReleaseExclusive() noexcept { CxPlatRwLockReleaseExclusive(&Handle); }
 };
+#pragma warning(pop)
 
 #pragma warning(push)
+#pragma warning(disable:26110) // TODO - Fix SAL annotations for locks
 #pragma warning(disable:28167) // TODO - Fix SAL annotations for IRQL changes
 struct CxPlatLockDispatch {
     CXPLAT_DISPATCH_LOCK Handle;
@@ -113,14 +117,14 @@ public:
         }
     }
 
-#if defined(CX_PLATFORM_WINUSER) || defined(CX_PLATFORM_WINKERNEL)
+#if _WIN32
     bool WaitFor(uint32_t TimeoutMs) noexcept {
         if (Initialized) {
             return (ThreadCompleted = CxPlatThreadWaitWithTimeout(&Thread, TimeoutMs));
         }
         return false;
     }
-#endif
+#endif // _WIN32
 };
 
 typedef CxPlatAsyncT<void> CxPlatAsync;

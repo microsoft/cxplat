@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(SolutionDir)src\cxplat.props" />
-  <ItemGroup>
-    <ClCompile Include="driver.cpp" />
-    <ClCompile Include="control.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\CxPlatTests.h" />
-  </ItemGroup>
+  <PropertyGroup>
+    <ProjectGuid>{435073CF-8546-47EB-B924-B12A17FC70EB}</ProjectGuid>
+    <TargetName>cxplattest</TargetName>
+    <UndockedType>sys</UndockedType>
+    <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
+    <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
+    <UndockedSourceLink>true</UndockedSourceLink>
+  </PropertyGroup>
+  <Import Project="$(UndockedDir)vs\windows.undocked.props" />
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)\src\lib\cxplat.kernel.vcxproj">
       <Project>{1e494654-9bfd-492f-bc31-36e2c73a782e}</Project>
@@ -16,68 +17,35 @@
       <Project>{6DBEB7D2-4BCF-46B2-95CB-88DEF2F049D7}</Project>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{435073CF-8546-47EB-B924-B12A17FC70EB}</ProjectGuid>
-    <TemplateGuid>{1EEBC5B0-39FD-40FB-B8DB-51E252A64B3C}</TemplateGuid>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-    <UseInternalMSUniCrtPackage>true</UseInternalMSUniCrtPackage>
-    <UndockedKernelModeBuild>true</UndockedKernelModeBuild>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration">
-    <TargetVersion>Windows10</TargetVersion>
-    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
-    <ConfigurationType>Driver</ConfigurationType>
-    <DriverType>KMDF</DriverType>
-    <_NT_TARGET_VERSION>0x0A00000A</_NT_TARGET_VERSION>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <TargetName>cxplattest</TargetName>
-    <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
-    <EnableInf2cat>false</EnableInf2cat>
-    <OutDir>$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <SignMode>Off</SignMode>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ExternalIncludePath />
-  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\CxPlatTests.h" />
+    <ClCompile Include="driver.cpp" />
+    <ClCompile Include="control.cpp" />
+  </ItemGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..;..\..;$(SolutionDir)src\inc;$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\inc;$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Platform)'=='x64'">/Gw /kernel /ZH:SHA_256 -d2jumptablerdata -d2epilogunwindrequirev2</AdditionalOptions>
+      <AdditionalIncludeDirectories>
+        ..;
+        ..\..;
+        $(SolutionDir)src\inc;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        SECURITY_KERNEL;
+        SECURITY_WIN32;
+        POOL_ZERO_DOWN_LEVEL_SUPPORT=1;
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cng.lib;ksecdd.lib;wdmsec.lib;uuid.lib;cxplat.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalDependencies>
+        cng.lib;
+        ksecdd.lib;
+        wdmsec.lib;
+        uuid.lib;
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;SECURITY_KERNEL;SECURITY_WIN32;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <FilesToPackage Include="$(TargetPath)" />
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <Import Project="$(UndockedDir)vs\windows.undocked.targets" />
 </Project>

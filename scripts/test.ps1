@@ -177,7 +177,19 @@ $CxPlatTest = $null
 $KernelPath = $null;
 if ($IsWindows) {
     $CxPlatTest = Join-Path $RootArtifactDir  "cxplattest.exe"
-    $KernelPath = Join-Path $RootDir "\artifacts\bin\winkernel\$($Arch)_$($Config)"
+
+    # Convert to Windows format
+    $KernelArch = $Arch
+    if (($KernelArch -eq "x64")) {
+        $KernelArch = "amd64"
+    }
+    $KernelConfig = $Config
+    if ($KernelConfig -eq "Debug") {
+        $KernelConfig = "chk"
+    } else {
+        $KernelConfig = "fre"
+    }
+    $KernelPath = Join-Path $RootDir "\artifacts\bin\$($KernelArch)$($KernelConfig)"
 }  elseif ($IsLinux -or $IsMacOS) {
     $CxPlatTest = Join-Path $RootArtifactDir "cxplattest"
 } else {

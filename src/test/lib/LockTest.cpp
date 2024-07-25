@@ -13,14 +13,14 @@ Abstract:
 
 void CxPlatTestLockBasic()
 {
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
     TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
 
     {
         CxPlatLock Lock;
         Lock.Acquire();
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
         Lock.Release();
@@ -29,16 +29,16 @@ void CxPlatTestLockBasic()
     {
         CxPlatLockDispatch Lock;
         Lock.Acquire();
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
         TEST_TRUE(CXPLAT_AT_DISPATCH());
 #endif
         Lock.Release();
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
     }
 
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
     {
         CxPlatLockDispatch Lock;
         CXPLAT_RAISE_IRQL();
@@ -72,14 +72,14 @@ void CxPlatTestLockBasic()
 
 void CxPlatTestLockReadWrite()
 {
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
     TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
 
     {
         CxPlatRwLock Lock;
         Lock.AcquireShared();
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
         Lock.ReleaseShared();
@@ -88,16 +88,16 @@ void CxPlatTestLockReadWrite()
     {
         CxPlatRwLockDispatch Lock;
         Lock.AcquireShared();
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
         TEST_TRUE(CXPLAT_AT_DISPATCH());
 #endif
         Lock.ReleaseShared();
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
         TEST_FALSE(CXPLAT_AT_DISPATCH());
 #endif
     }
 
-#if defined(CX_PLATFORM_WINKERNEL)
+#ifdef _KERNEL_MODE
     {
         CxPlatRwLockDispatch Lock;
         CXPLAT_RAISE_IRQL();

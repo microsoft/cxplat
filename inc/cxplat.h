@@ -12,12 +12,15 @@ Abstract:
 #ifndef CXPLAT_H
 #define CXPLAT_H
 
-#ifdef CX_PLATFORM_WINKERNEL
+#ifdef _KERNEL_MODE
 #include "cxplat_winkernel_shim.h"
-#elif CX_PLATFORM_LINUX
+#elif _WIN32
+#elif __linux__
 #include "cxplat_posix_shim.h"
-#elif CX_PLATFORM_DARWIN
+#elif __APPLE__ || __FreeBSD__
 #include "cxplat_posix_shim.h"
+#else
+#error "Unsupported Platform"
 #endif
 
 //
@@ -58,16 +61,12 @@ typedef enum CXPLAT_THREAD_FLAGS {
 DEFINE_ENUM_FLAG_OPERATORS(CXPLAT_THREAD_FLAGS);
 #endif
 
-#ifdef CX_PLATFORM_WINKERNEL
+#ifdef _KERNEL_MODE
 #include "cxplat_winkernel.h"
-#elif CX_PLATFORM_WINUSER
+#elif _WIN32
 #include "cxplat_winuser.h"
-#elif CX_PLATFORM_LINUX
+#elif __linux__ || __APPLE__ || __FreeBSD__
 #include "cxplat_posix.h"
-#elif CX_PLATFORM_DARWIN
-#include "cxplat_posix.h"
-#else
-#error "Unsupported Platform"
 #endif
 
 #if defined(__cplusplus)

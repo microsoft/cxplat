@@ -1,75 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\cxplat.props" />
+  <PropertyGroup>
+    <ProjectGuid>{E680F075-FEE8-421B-A9F1-DAD0A1C537D3}</ProjectGuid>
+    <TargetName>cxplat</TargetName>
+    <UndockedType>drvlib</UndockedType>
+    <UndockedDir>$(MSBuildThisFileDirectory)\..\..\submodules\undocked\</UndockedDir>
+    <UndockedVerFile>$(MSBuildThisFileDirectory)\..\..\version.json</UndockedVerFile>
+    <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
+    <UndockedSourceLink>true</UndockedSourceLink>
+  </PropertyGroup>
+  <Import Project="$(UndockedDir)vs\windows.undocked.props" />
   <ItemGroup>
+    <ClInclude Include="cxplat_trace.h" />
+    <ClInclude Include="cxplat_winkernel.h" />
     <ClCompile Include="cxplat_winkernel.c" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="cxplat_winkernel.h" />
-    <ClInclude Include="cxplat_trace.h" />
-  </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{1e494654-9bfd-492f-bc31-36e2c73a782e}</ProjectGuid>
-    <TemplateGuid>{8a9e2f9b-135b-4281-ad25-ed1a4dadb967}</TemplateGuid>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-    <DriverType>KMDF</DriverType>
-    <UseInternalMSUniCrtPackage>true</UseInternalMSUniCrtPackage>
-    <UndockedKernelModeBuild>true</UndockedKernelModeBuild>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Label="Configuration">
-    <TargetVersion>Windows10</TargetVersion>
-    <PlatformToolset>WindowsKernelModeDriver10.0</PlatformToolset>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <_NT_TARGET_VERSION>0x0A00000A</_NT_TARGET_VERSION>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <CXPLAT_VER_BUILD_ID Condition="'$(CXPLAT_VER_BUILD_ID)' == ''">0</CXPLAT_VER_BUILD_ID>
-    <CXPLAT_VER_SUFFIX Condition="'$(CXPLAT_VER_SUFFIX)' == ''">-private</CXPLAT_VER_SUFFIX>
-    <CXPLAT_VER_GIT_HASH Condition="'$(CXPLAT_VER_GIT_HASH)' == ''">0</CXPLAT_VER_GIT_HASH>
-  </PropertyGroup>
-  <PropertyGroup>
-    <TargetName>cxplat</TargetName>
-    <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir Condition="'$(SolutionName)' == 'cxplat.kernel'">$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</OutDir>
-    <!-- Output path when built as a dependency -->
-    <OutDir Condition="'$(SolutionName)' != 'cxplat.kernel'">$(SolutionDir)artifacts\bin\$(WinPlat)$(WinConfig)\cxplat\winkernel\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ExternalIncludePath />
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)submodules\cxplat\inc;$(SolutionDir)submodules\cxplat\src\inc;$(SolutionDir)inc;$(SolutionDir)\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalOptions Condition="'$(Platform)'!='x64'">/Gw /kernel /ZH:SHA_256</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Platform)'=='x64'">/Gw /kernel /ZH:SHA_256 -d2jumptablerdata -d2epilogunwindrequirev2</AdditionalOptions>
-    </ClCompile>
-    <Lib>
-      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;_DEBUG;DEBUG;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>
+        ..\inc;
+        ..\..\inc;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>
+        SECURITY_KERNEL;
+        SECURITY_WIN32;
+        POOL_ZERO_DOWN_LEVEL_SUPPORT=1;
+        %(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <PreprocessorDefinitions>CX_PLATFORM_WINKERNEL;VER_BUILD_ID=$(CXPLAT_VER_BUILD_ID);VER_SUFFIX=$(CXPLAT_VER_SUFFIX);VER_GIT_HASH=$(CXPLAT_VER_GIT_HASH);SECURITY_KERNEL;SECURITY_WIN32;POOL_ZERO_DOWN_LEVEL_SUPPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <Import Project="$(UndockedDir)vs\windows.undocked.targets" />
 </Project>

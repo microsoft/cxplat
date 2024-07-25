@@ -181,6 +181,7 @@ struct KRTL_CLASS DebugBlock
 #if DBG
     PAGED ~DebugBlock()
     {
+        PAGED_CODE();
         ASSERT_VALID();
         Signature |= 0x80;
     }
@@ -541,6 +542,8 @@ public:
 
     PAGED KArray(size_t count = 0, const T &value = (T)0) noexcept
     {
+        PAGED_CODE();
+
         if (count)
         {
             (void)grow(count);
@@ -598,6 +601,8 @@ public:
 
     PAGED bool reserve(size_t count)
     {
+        PAGED_CODE();
+
         if (m_bufferSize >= count)
             return true;
 
@@ -675,6 +680,8 @@ public:
 
     PAGED bool append(T const &t)
     {
+        PAGED_CODE();
+
         if (!grow((size_t)m_numElements+1))
             return false;
 
@@ -800,6 +807,8 @@ public:
 
     PAGED void eraseAt(size_t index)
     {
+        PAGED_CODE();
+
         if (index >= m_numElements)
             RtlFailFast(FAST_FAIL_INVALID_ARG);
 
@@ -831,11 +840,13 @@ public:
 
     PAGED iterator begin()
     {
+        PAGED_CODE();
         return { this, 0 };
     }
 
     PAGED const_iterator begin() const
     {
+        PAGED_CODE();
         return { this, 0 };
     }
 
@@ -846,6 +857,7 @@ public:
 
     PAGED const_iterator end() const
     {
+        PAGED_CODE();
         return { this, m_numElements };
     }
 
@@ -872,6 +884,8 @@ private:
 
     PAGED void moveElements(ULONG from, ULONG to, ULONG number)
     {
+        PAGED_CODE();
+
         if (from == to || number == 0)
         {
             NOTHING;
@@ -930,6 +944,8 @@ private:
 
     PAGED bool grow(size_t count)
     {
+        PAGED_CODE();
+
         if (m_bufferSize >= count)
             return true;
 
