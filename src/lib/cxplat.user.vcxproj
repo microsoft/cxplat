@@ -5,6 +5,7 @@
     <TargetName>cxplat</TargetName>
     <UndockedType>lib</UndockedType>
     <UndockedDir>$(MSBuildThisFileDirectory)\..\..\submodules\undocked\</UndockedDir>
+    <UndockedVerFile>$(MSBuildThisFileDirectory)\..\..\version.json</UndockedVerFile>
     <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
     <UndockedSourceLink>true</UndockedSourceLink>
   </PropertyGroup>
