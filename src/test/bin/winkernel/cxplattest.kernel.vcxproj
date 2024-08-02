@@ -42,7 +42,7 @@
     <TargetName>cxplattest</TargetName>
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
     <EnableInf2cat>false</EnableInf2cat>
-    <OutDir>$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)artifacts\bin\$(Platform)_$(Configuration)\winkernel\</OutDir>
     <IntDir>$(SolutionDir)build\winkernel\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
     <SignMode>Off</SignMode>
   </PropertyGroup>
@@ -58,7 +58,7 @@
       <AdditionalOptions Condition="'$(Platform)'=='x64'">/Gw /kernel /ZH:SHA_256 -d2jumptablerdata -d2epilogunwindrequirev2</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)artifacts\bin\winkernel\$(Platform)_$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)artifacts\bin\$(Platform)_$(Configuration)\winkernel\</AdditionalLibraryDirectories>
       <AdditionalDependencies>cng.lib;ksecdd.lib;wdmsec.lib;uuid.lib;cxplat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>

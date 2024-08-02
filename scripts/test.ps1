@@ -177,7 +177,7 @@ $CxPlatTest = $null
 $KernelPath = $null;
 if ($IsWindows) {
     $CxPlatTest = Join-Path $RootArtifactDir  "cxplattest.exe"
-    $KernelPath = Join-Path $RootDir "\artifacts\bin\winkernel\$($Arch)_$($Config)"
+    $KernelPath = Join-Path $RootDir "\artifacts\bin\$($Arch)_$($Config)\winkernel\"
 }  elseif ($IsLinux -or $IsMacOS) {
     $CxPlatTest = Join-Path $RootArtifactDir "cxplattest"
 } else {

@@ -56,7 +56,7 @@ if (!(Test-Path $SignToolPath)) { Write-Error "$SignToolPath does not exist!" }
 
 # Artifact paths.
 $RootDir = (Split-Path $PSScriptRoot -Parent)
-$ArtifactsDir = Join-Path $RootDir "artifacts\bin\winkernel\$($Arch)_$($Config)"
+$ArtifactsDir = Join-Path $RootDir "artifacts\bin\$($Arch)_$($Config)\winkernel\"
 
 # Signing certificate path.
 $CertPath = Join-Path $RootDir "artifacts\corenet-ci-main\vm-setup\CoreNetSign.pfx"

@@ -35,9 +35,11 @@
   <PropertyGroup>
     <TargetName>cxplat</TargetName>
     <IntDir>$(SolutionDir)build\winuser\$(Platform)_$(Configuration)\obj\$(ProjectName)\</IntDir>
-    <OutDir Condition="'$(SolutionName)' == 'cxplat.winuser'">$(SolutionDir)artifacts\bin\winuser\$(Platform)_$(Configuration)\</OutDir>
+    <OutDir Condition="'$(CxPlatOutDir)' != ''">$(CxPlatOutDir)</OutDir>
+    <OutDir Condition="'$(SolutionName)' == 'cxplat.winuser'">$(SolutionDir)artifacts\bin\$(Platform)_$(Configuration)\</OutDir>
     <!-- Output path when built as a dependency -->
-    <OutDir Condition="'$(SolutionName)' != 'cxplat.winuser'">$(SolutionDir)artifacts\bin\$(WinPlat)$(WinConfig)\cxplat\winuser\</OutDir>
+    <OutDir Condition="'$(SolutionName)' != 'cxplat.winuser' and '$(CxPlatOutDir)' == ''">$(SolutionDir)artifacts\bin\$(WinPlat)$(WinConfig)\cxplat\</OutDir>
+    <OutDir>$(OutDir)winuser\</OutDir>
   </PropertyGroup>
   <PropertyGroup>
     <ExternalIncludePath />
