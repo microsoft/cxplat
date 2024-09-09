@@ -692,6 +692,7 @@ public:
 
     PAGED bool push_back(T const &t)
     {
+        PAGED_CODE();
         return append(t);
     }
 
@@ -707,6 +708,7 @@ public:
 
     PAGED bool push_back(T &&t)
     {
+        PAGED_CODE();
         return append(t);
     }
 
