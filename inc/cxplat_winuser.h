@@ -114,14 +114,23 @@ CxPlatLogAssert(
 // Wrapper functions
 //
 
+inline
+CXPLAT_STATUS
+CxPlatGetLastErrorAsStatus(
+    VOID
+    )
+{
+    return HRESULT_FROM_WIN32(GetLastError());
+}
+
 //
 // CloseHandle has an incorrect SAL annotation, so call through a wrapper.
 //
 _IRQL_requires_max_(PASSIVE_LEVEL)
 inline
-void
+CXPLAT_STATUS
 CxPlatCloseHandle(_Pre_notnull_ HANDLE Handle) {
-    CloseHandle(Handle);
+    return CloseHandle(Handle) ? CXPLAT_STATUS_SUCCESS : CxPlatGetLastErrorAsStatus();
 }
 
 //

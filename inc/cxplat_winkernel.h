@@ -184,6 +184,19 @@ typedef struct CXPLAT_DISPATCH_RW_LOCK {
 #define CxPlatDispatchRwLockReleaseExclusive(Lock) ExReleaseSpinLockExclusive(&(Lock)->SpinLock, (Lock)->PrevIrql)
 
 //
+// Handle Interfaces
+//
+//
+// CloseHandle has an incorrect SAL annotation, so call through a wrapper.
+//
+_IRQL_requires_max_(PASSIVE_LEVEL)
+inline
+CXPLAT_STATUS
+CxPlatCloseHandle(_Pre_notnull_ HANDLE Handle) {
+    return ZwClose(Handle);
+}
+
+//
 // Time Measurement Interfaces
 //
 
