@@ -78,8 +78,8 @@ jobs:
       fail-fast: false
       matrix:
         vec: [
-          { config: "Debug", plat: "macos", os: "macos-12", arch: "x64" },
-          { config: "Release", plat: "macos", os: "macos-12", arch: "x64" }
+          { config: "Debug", plat: "macos", os: "macos-13", arch: "x64" },
+          { config: "Release", plat: "macos", os: "macos-13", arch: "x64" }
         ]
     uses: ./.github/workflows/build-reuse-unix.yml
     with:
