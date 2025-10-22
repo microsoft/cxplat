@@ -28,10 +28,6 @@ if (ATOMIC)
     target_link_libraries(base_link INTERFACE ${ATOMIC})
 endif()
 
-if (NUMA)
-    target_link_libraries(base_link INTERFACE ${NUMA})
-endif()
-
 if(WIN32)
     if(CXPLAT_UWP_BUILD)
         target_link_libraries(base_link INTERFACE OneCore ws2_32 ntdll)
