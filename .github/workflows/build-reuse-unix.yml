@@ -74,7 +74,7 @@ jobs:
       shell: pwsh
       run: scripts/build.ps1 -Config ${{ inputs.config }} -Platform ${{ inputs.plat }} -Arch ${{ inputs.arch }} ${{ inputs.clang }} -OneBranch
     - name: Upload build artifacts
-      uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
       with:
         name: ${{ inputs.config }}-${{ inputs.plat }}-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.clang }}
         path: artifacts
