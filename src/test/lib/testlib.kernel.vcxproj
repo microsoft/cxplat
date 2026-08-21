@@ -6,7 +6,6 @@
     <UndockedType>drvlib</UndockedType>
     <UndockedDir>$(SolutionDir)submodules\undocked\</UndockedDir>
     <UndockedOut>$(SolutionDir)artifacts\</UndockedOut>
-    <UndockedSourceLink>true</UndockedSourceLink>
   </PropertyGroup>
   <Import Project="$(UndockedDir)vs\windows.undocked.props" />
   <ItemGroup>

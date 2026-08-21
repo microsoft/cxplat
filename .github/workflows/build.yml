@@ -45,7 +45,7 @@ jobs:
       matrix:
         config: ['Debug', 'Release']
         plat: ['winkernel', 'windows']
-        os: ['windows-2022']
+        os: ['windows-2022', 'windows-2025-vs2026']
         arch: [x64, arm64]
     uses: ./.github/workflows/build-reuse-vs.yml
     with:
