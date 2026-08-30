@@ -119,6 +119,9 @@ CxPlatLogAssert(
 #define CXPLAT_ALLOC_PAGED(Size, Tag) ExAllocatePool2(POOL_FLAG_PAGED | POOL_FLAG_UNINITIALIZED, Size, Tag)
 #define CXPLAT_ALLOC_NONPAGED(Size, Tag) ExAllocatePool2(POOL_FLAG_NON_PAGED | POOL_FLAG_UNINITIALIZED, Size, Tag)
 #define CXPLAT_FREE(Mem, Tag) ExFreePoolWithTag((void*)Mem, Tag)
+#define CXPLAT_VIRTUAL_ALLOC(Size, TypeFlags, ProtectionFlags, Tag) \
+    CXPLAT_ALLOC_NONPAGED(Size, Tag)
+#define CXPLAT_VIRTUAL_FREE(Mem, Size, Type, Tag) CXPLAT_FREE(Mem, Tag);
 
 #define CxPlatZeroMemory RtlZeroMemory
 #define CxPlatCopyMemory RtlCopyMemory
@@ -615,6 +618,38 @@ Error:
     (STATUS_SUCCESS == CxPlatInternalThreadWaitWithTimeout(Thread, TimeoutMs))
 typedef ULONG_PTR CXPLAT_THREAD_ID;
 #define CxPlatCurThreadID() ((CXPLAT_THREAD_ID)PsGetCurrentThreadId())
+
+inline
+BOOLEAN
+CxPlatSetThreadNodeAffinity(
+    LONG NodeAffinity
+    )
+{
+    GROUP_AFFINITY group;
+
+    KeQueryNodeActiveAffinity((USHORT)NodeAffinity, &group, NULL);
+    KeSetSystemGroupAffinityThread(&group, NULL);
+
+    return TRUE;
+}
+
+inline
+BOOLEAN
+CxPlatSetThreadGroupAffinity(
+    LONG GroupNumber,
+    DWORD_PTR CpuAffinity
+    )
+{
+    GROUP_AFFINITY group = {0};
+
+    group.Mask = CpuAffinity;
+    group.Group = (USHORT)GroupNumber;
+
+    KeSetSystemGroupAffinityThread(&group, NULL);
+
+    return TRUE;
+}
+
 
 //
 // Crypto Interfaces
