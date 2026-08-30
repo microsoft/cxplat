@@ -31,7 +31,7 @@ typedef struct CX_PLATFORM {
 } CX_PLATFORM;
 
 #ifdef CXPLAT_NUMA_AWARE
-#include <numa.h>               // If missing: `apt-get install -y libnuma-dev`
+#include "numasupport.h"
 uint32_t CxPlatNumaNodeCount;
 cpu_set_t* CxPlatNumaNodeMasks;
 #endif // CXPLAT_NUMA_AWARE
@@ -118,14 +118,21 @@ CxPlatInitialize(
 #endif
 
 #ifdef CXPLAT_NUMA_AWARE
-    if (numa_available() >= 0) {
-        CxPlatNumaNodeCount = (uint32_t)numa_num_configured_nodes();
+    NUMASupportInitialize();
+    if (IsNumaAvailable()) {
+        CxPlatNumaNodeCount = (uint32_t)GetNumaNodeCount();
         CxPlatNumaNodeMasks =
             CXPLAT_ALLOC_NONPAGED(sizeof(cpu_set_t) * CxPlatNumaNodeCount, CXPLAT_POOL_PROC);
         CXPLAT_FRE_ASSERT(CxPlatNumaNodeMasks);
         for (uint32_t n = 0; n < CxPlatNumaNodeCount; ++n) {
             CPU_ZERO(&CxPlatNumaNodeMasks[n]);
-            CXPLAT_FRE_ASSERT(numa_node_to_cpus_compat((int)n, CxPlatNumaNodeMasks[n].__bits, sizeof(cpu_set_t)) >= 0);
+            // Iterate over all CPUs and check which ones belong to this NUMA node
+            for (uint32_t cpu = 0; cpu < CxPlatProcessorCount; ++cpu) {
+                int nodeNum = GetNumaNodeNumByCpu((int)cpu);
+                if (nodeNum == (int)n) {
+                    CPU_SET(cpu, &CxPlatNumaNodeMasks[n]);
+                }
+            }
         }
     } else {
         CxPlatNumaNodeCount = 0;
